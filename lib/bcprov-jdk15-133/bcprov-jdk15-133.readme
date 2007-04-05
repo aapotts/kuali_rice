@@ -1,0 +1,3 @@
+The BouncyCastle has no binary distribution per se;
+it's just the jar file itself, which is crypotgraphically signed.
+The bcprov zip here contains the source and javadocs.
