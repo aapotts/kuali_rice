@@ -1,1 +1,0 @@
-javamail 1.3.2 requires jaf (javabeans activation framework) 1.0.2
