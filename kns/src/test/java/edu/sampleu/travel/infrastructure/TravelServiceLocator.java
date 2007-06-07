@@ -26,7 +26,7 @@ import uk.ltd.getahead.dwr.create.SpringCreator;
 
 public class TravelServiceLocator extends KNSServiceLocator {
 
-	public static final String SPRING_BEANS = "classpath:edu/sampleu/travel/resources/SampleTravelAppModule.xml";
+	public static final String SPRING_BEANS = "classpath:SampleTravelAppModule.xml";
 
 	private static TravelServiceLocator instance = new TravelServiceLocator();
 
