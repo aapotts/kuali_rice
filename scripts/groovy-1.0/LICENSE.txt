@@ -1,7 +1,7 @@
 
 
 /*
- $Id: LICENSE.txt,v 1.2 2007-08-15 15:49:53 ewestfal Exp $
+ $Id: LICENSE.txt,v 1.3 2007-12-03 04:45:03 ewestfal Exp $
 
  Copyright 2003 (C) James Strachan and Bob Mcwhirter. All Rights Reserved.
 
