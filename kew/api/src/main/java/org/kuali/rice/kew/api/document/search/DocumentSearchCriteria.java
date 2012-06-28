@@ -83,6 +83,7 @@ import java.util.Map;
     DocumentSearchCriteria.Elements.START_AT_INDEX,
     DocumentSearchCriteria.Elements.MAX_RESULTS,
     DocumentSearchCriteria.Elements.IS_ADVANCED_SEARCH,
+    DocumentSearchCriteria.Elements.SEARCH_OPTIONS,
     CoreConstants.CommonElements.FUTURE_ELEMENTS
 })
 public final class DocumentSearchCriteria extends AbstractDataTransferObject implements DocumentSearchCriteriaContract {
@@ -193,7 +194,11 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
 
     @XmlElement(name = Elements.IS_ADVANCED_SEARCH, required = false)
     private final String isAdvancedSearch;
-    
+
+    @XmlElement(name = Elements.SEARCH_OPTIONS, required = false)
+    @XmlJavaTypeAdapter(MultiValuedStringMapAdapter.class)
+    private final Map<String, List<String>> searchOptions;
+
     @SuppressWarnings("unused")
     @XmlAnyElement
     private final Collection<Element> _futureElements = null;
@@ -228,6 +233,7 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         this.dateApplicationDocumentStatusChangedFrom = null;
         this.dateApplicationDocumentStatusChangedTo = null;
         this.documentAttributeValues = null;
+        this.searchOptions = null;
         this.saveName = null;
         this.startAtIndex = null;
         this.maxResults = null;
@@ -262,6 +268,7 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         this.dateApplicationDocumentStatusChangedFrom = builder.getDateApplicationDocumentStatusChangedFrom();
         this.dateApplicationDocumentStatusChangedTo = builder.getDateApplicationDocumentStatusChangedTo();
         this.documentAttributeValues = ModelObjectUtils.createImmutableCopy(builder.getDocumentAttributeValues());
+        this.searchOptions = ModelObjectUtils.createImmutableCopy(builder.getSearchOptions());
         this.saveName = builder.getSaveName();
         this.startAtIndex = builder.getStartAtIndex();
         this.maxResults = builder.getMaxResults();
@@ -399,6 +406,11 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
     }
 
     @Override
+    public Map<String, List<String>> getSearchOptions() {
+        return this.searchOptions;
+    }
+
+    @Override
     public String getSaveName() {
         return saveName;
     }
@@ -450,6 +462,7 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         private DateTime dateApplicationDocumentStatusChangedFrom;
         private DateTime dateApplicationDocumentStatusChangedTo;
         private Map<String, List<String>> documentAttributeValues;
+        private Map<String, List<String>> searchOptions;
         private String saveName;
         private Integer startAtIndex;
         private Integer maxResults;
@@ -460,6 +473,7 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             setDocumentStatusCategories(new ArrayList<DocumentStatusCategory>());
             setAdditionalDocumentTypeNames(new ArrayList<String>());
             setDocumentAttributeValues(new HashMap<String, List<String>>());
+            setSearchOptions(new HashMap<String, List<String>>());
         }
 
         /**
@@ -518,6 +532,9 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             builder.setDateApplicationDocumentStatusChangedTo(contract.getDateApplicationDocumentStatusChangedTo());
             if (contract.getDocumentAttributeValues() != null) {
                 builder.setDocumentAttributeValues(new HashMap<String, List<String>>(contract.getDocumentAttributeValues()));
+            }
+            if (contract.getSearchOptions() != null) {
+                builder.setSearchOptions(new HashMap<String, List<String>>(contract.getSearchOptions()));
             }
             builder.setSaveName(contract.getSaveName());
             builder.setStartAtIndex(contract.getStartAtIndex());
@@ -665,6 +682,11 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         }
 
         @Override
+        public Map<String, List<String>> getSearchOptions() {
+            return this.searchOptions;
+        }
+
+        @Override
         public String getSaveName() {
             return this.saveName;
         }
@@ -788,6 +810,11 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             this.documentAttributeValues = documentAttributeValues;
         }
 
+        /**
+         * add document attribute value to an internal map
+         * @param name - the attribute name
+         * @param value - the attribute value
+         */
         public void addDocumentAttributeValue(String name, String value) {
             if (StringUtils.isBlank(value)) {
                 throw new IllegalArgumentException("value was null or blank");
@@ -798,6 +825,10 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
                 getDocumentAttributeValues().put(name, values);
             }
             values.add(value);
+        }
+
+        public void setSearchOptions(Map<String, List<String>> searchOptions) {
+            this.searchOptions = searchOptions;
         }
 
         public void setSaveName(String saveName) {
@@ -818,8 +849,8 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
 
         /**
          * Resets DateTimes to local TimeZone (preserving absolute time)
-         * @see {@link http://jira.codehaus.org/browse/JACKSON-279}
-         * @see {@link org.kuali.rice.core.util.JacksonRiceModule}
+         *
+         * @see <a href="http://jira.codehaus.org/browse/JACKSON-279">Modify Joda DateTime</a>
          */
         public void normalizeDateTimes() {
             if (dateCreatedFrom != null) dateCreatedFrom = dateCreatedFrom.withZone(DateTimeZone.getDefault());
@@ -881,6 +912,7 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         final static String START_AT_INDEX = "startAtIndex";
         final static String MAX_RESULTS = "maxResults";
         final static String IS_ADVANCED_SEARCH = "isAdvancedSearch";
+        final static String SEARCH_OPTIONS = "searchOptions";
     }
 
 }
