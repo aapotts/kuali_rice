@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2005-2012 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
+    <info>
+        <title>Kuali Rice ${project.version} Release Notes</title>
+        <edition>${project.version}</edition>
+        <pubdate>Released: ${docbook.build.timestamp}</pubdate>
+    </info>
+    <section xml:id="overview" xreflabel="Overview">
+        <title>Overview</title>
+        <para>Welcome to Rice ${project.version}! </para>
+        <section>
+            <title>Release Highlights</title>
+            <itemizedlist>
+                <title>Highlights of this release include:</title>
+                <listitem>
+                    <simpara>Numerous bug fixes. See below for details.</simpara>
+                </listitem>
+                <listitem>
+                    <simpara>Documentation updates</simpara>
+                </listitem>
+            </itemizedlist>
+        </section>
+        <section>
+            <title>Download</title>
+            <para>Kuali Rice ${project.version} can be downloaded from the Rice website at <link xlink:show="new" xlink:href="http://kuali.org/rice/download">http://kuali.org/rice/download</link>.</para>
+            <para>There are three different distributions of Rice available: source, binary and
+                server. Please read the Installation Guide for more details on each of these
+                distributions.</para>
+        </section>
+        <section>
+            <title>Documentation</title>
+            <para>API Documentation can be found at <link xlink:show="new" xlink:href="http://site.kuali.org/rice/${project.version}/apidocs/index.html">http://site.kuali.org/rice/${project.version}/apidocs/index.html</link></para>
+            <para>Formal documentation can be found at <link xlink:show="new" xlink:href="http://site.kuali.org/rice/${project.version}/reference/html/portal.html">http://site.kuali.org/rice/${project.version}/reference/html/portal.html</link>.
+                This documentation is still in the process of review and update for 2.0 which will
+                continue through subsequent releases, so please follow the notes in each document to
+                report any outdated information.</para>
+        </section>
+        <section>
+            <title>Contact</title>
+            <para>If you encounter any difficulty, please don't hesitate to contact the Rice team on
+                our public collaboration mailing list at <email>rice.collab@kuali.org</email>.
+                Please indicate that you are using the ${project.version} version of Rice.</para>
+        </section>
+    </section>
+    <section xml:id="items_addressed_in_rice">
+        <title>Items Addressed in Rice ${project.version}</title>                                                                                        
+        <section><title>        Bug Fix
+        </title>
+            <para><itemizedlist>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-6881'>KULRICE-6881</link>] -         Unable to customize document search results based on criteria
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-6975'>KULRICE-6975</link>] -         Error on custom document searches, fails to determine proper searchable attribute configuration for given data type of &#39;CURRENCY&#39;.
+                </para></listitem>
+                <listitem><para>[<link xlink:href="https://jira.kuali.org/browse/KULRICE-7112">KULRICE-7112</link>] - When
+                            copying a document with notes, the original document&#39;s notes are
+                            lost because new copied document&#39;s notes note ids are also
+                            copied</para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7171'>KULRICE-7171</link>] -         Document type field on document search seems to be case sensitive in Rice 2.0
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7222'>KULRICE-7222</link>] -         CURRENCY data types still not always working in document search
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7240'>KULRICE-7240</link>] -         Routing and Identity Management Document Type Hierarchy: Adding a Delegation not working correctly
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7252'>KULRICE-7252</link>] -         Component search criteria is ignored when searching for Parameters
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7284'>KULRICE-7284</link>] -         Javascript doesn&#39;t work in a Rice URL opened inside the KC portal in standalone mode
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7290'>KULRICE-7290</link>] -         The DateApproved field does not appear to be set during routing
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7342'>KULRICE-7342</link>] -         DocumentType class obtaining attributes incorrectly - breaking ActionList functionality
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7374'>KULRICE-7374</link>] -         DataDictionary field for column visibility in Custom Doc Search Results not being mapped properly in FieldUtils
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7391'>KULRICE-7391</link>] -         Group document not working with custom attributes
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7392'>KULRICE-7392</link>] -         Another problem with EBOs - PBO.refresh() not handling them properly
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7398'>KULRICE-7398</link>] -         Rice 2.1 Upgrade script recreates sequence
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7414'>KULRICE-7414</link>] -         DocumentService disapproveDocument does not call saveDocumentNotes and results in stack trace
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7415'>KULRICE-7415</link>] -         BO Notes do not save through notes tag
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7420'>KULRICE-7420</link>] -         The Copy function is creating a history (within the Notes and Attachments section) of all copied doc numbers linked to the original &#39;copied&#39; document
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7421'>KULRICE-7421</link>] -         Create Date To criteria is saved as Criteria Date From value
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7429'>KULRICE-7429</link>] -         KIM type service location having problems within the Embedded client
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7441'>KULRICE-7441</link>] -         EBO Existence validation failing - unable to validate namespace code on KIM documents
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7443'>KULRICE-7443</link>] -         Role document blows on the KRIM_ROLE_RSP_ACTN_TC1 constraint
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7447'>KULRICE-7447</link>] -         If KEW user options table has malformed JSON, users can not be loaded by workflow engine
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7451'>KULRICE-7451</link>] -         Future Action Requests tab does not work when using standalone Rice server
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7458'>KULRICE-7458</link>] -         Restore the display of permission/responsibility details on KIM Inquiries
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7459'>KULRICE-7459</link>] -         Requisition, PO and its subtype documents are going to final status where they should not.
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7479'>KULRICE-7479</link>] -         Delegations not showing on Role document
+                </para></listitem>
+                <listitem><para>[<link xlink:href="https://jira.kuali.org/browse/KULRICE-7481">KULRICE-7481</link>] - Failing
+                            to load the EBO based on the stateCode and zipCode </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7491'>KULRICE-7491</link>] -         Some Role docs are not routing to final
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7492'>KULRICE-7492</link>] -         Documents that use PeopleFlows throw stack trace on submission.
+                </para></listitem>
+                <listitem><para>[<link xlink:href="https://jira.kuali.org/browse/KULRICE-7493">KULRICE-7493</link>] - Action
+                            list filter not being applied until after refresh  </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7498'>KULRICE-7498</link>] -         On ActionItemContract the getActionToTake(), getDateAssignedString(), getActionItemIndex() were mistakenly included originally and should be deprecated
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7504'>KULRICE-7504</link>] -         Unable to inactivate a Person
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7510'>KULRICE-7510</link>] -         Inversion of default caching of derived role membership from Rice 1 to Rice 2
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7513'>KULRICE-7513</link>] -         YAEBOP - Yet Another EBO Problem...Persistence Service not guarded properly
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7514'>KULRICE-7514</link>] -         State Code Service cache (and others?) are not using parameters in cache calls
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7525'>KULRICE-7525</link>] -         ActionTakenService.getLastApprovedDate is overly slow and causes performance issues with large action lists
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7530'>KULRICE-7530</link>] -         RouteNodeDAO.getTerminalNodeNames logic is incorrect
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7535'>KULRICE-7535</link>] -         NullPointerException in KualiHelpAction.getLookupHelpText if the docType  isn&#39;t found
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7536'>KULRICE-7536</link>] -         getPermissionTypeServicesByTemplateId can fetch permission type more than once
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7537'>KULRICE-7537</link>] -         NullPointerException in DocumentConfigurationViewAction.flattenRouteNodes
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7538'>KULRICE-7538</link>] -         In certain cases, the person or group is not deleted from the KRNS_ADHOC_RTE_ACTN_RECIP_T table for documents that use adhoc routing
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7539'>KULRICE-7539</link>] -         Security fixes to prevent phishing attacks
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7540'>KULRICE-7540</link>] -         ClassNotFound exception when attempting to use namespace lookup when creating routing rule
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7541'>KULRICE-7541</link>] -         Condition-based caching annotations on PermissionService are incorrect
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7549'>KULRICE-7549</link>] -         KSBConfigurer attempts to run MessageFetcher when KSB run mode is set to &quot;THIN&quot;
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7551'>KULRICE-7551</link>] -         Routing &amp; Identity Management Document Type Hierarchy screen does not properly create the Search Delegations screen
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7553'>KULRICE-7553</link>] -         EmbeddedLifeCycle should only run when RunMode is LOCAL
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7573'>KULRICE-7573</link>] -         The standalone version of WorkflowDocumentActionsService should always be called when kew.mode is Thin or Remote
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7575'>KULRICE-7575</link>] -         Fix optimistic locking issues on action items for mass actions
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7577'>KULRICE-7577</link>] -         KEWServiceLocator does not correctly retrieve rice.kew.workflowDocumentPrototype service
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7585'>KULRICE-7585</link>] -         MapStringStringAdapter does not preserve order of entries which is important for components like RemotableAttributeSelect
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7609'>KULRICE-7609</link>] -         In thin and remote mode, interaction with WorkflowDocumentActionsService is ocurring against endpoints published be applications other than the standalone server
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7615'>KULRICE-7615</link>] -         Error loading action list when user has action request resulting from delegation for a group
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7617'>KULRICE-7617</link>] -         The Super User Actions tag does not deal with action requests that are role requests
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7624'>KULRICE-7624</link>] -         Results from person lookup should be bounded by default like it is in Rice 1.x
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7627'>KULRICE-7627</link>] -         DOC_TYPE_NAME_DEL_XPATH is not correct in RuleRoutingAttribute.java
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7628'>KULRICE-7628</link>] -         MessageServiceInvoker#getQueueService doesn&#39;t use the application ID to look up service
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7629'>KULRICE-7629</link>] -         Title on the configuration viewer page says &quot;Service Registry&quot;
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7635'>KULRICE-7635</link>] -         GlobalResourceLoader is over-synchronizing on GRL.getService
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7638'>KULRICE-7638</link>] -         Error is thrown on rule template lookup from the rule screen when getHasLookupable is called and quickFinderClassNameImpl is an empty string
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7643'>KULRICE-7643</link>] -         DTOConverter#convertWorkflowAttributeDefinition only looks for a definition by name now
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7658'>KULRICE-7658</link>] -         commons-beanutils doesn&#39;t properly handle subclassing
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7689'>KULRICE-7689</link>] -         Performance issue with KRIM Document Qualified Roles
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7789'>KULRICE-7789</link>] -         Improve exception handling in RoleServiceImpl#getStoredRoleGroupsUsingExactMatchOnQualification related to role type services
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7847'>KULRICE-7847</link>] -         Race condition in the getObject method of GlobalResourceLoaderServiceFactoryBean
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7861'>KULRICE-7861</link>] -         Cannot define datasource on KimConfigurer
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7876'>KULRICE-7876</link>] -         Concurrency bug in Kuali beanutils patch
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7878'>KULRICE-7878</link>] -         IdentityManagementPersonDocument is not passing a class to the sequence accessor service
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7963'>KULRICE-7963</link>] -         KRMS - Copy Rule generating stack trace
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7970'>KULRICE-7970</link>] -         PeopleFlow - Stack trace upon adding delegate member
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-8043'>KULRICE-8043</link>] -         Term specification document remains enroute after blanket approval and user is unable to create any more term specification documents.
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-8061'>KULRICE-8061</link>] -         StandardGenericXMLRuleAttributeTest.testIsMatch NPE fix for 2.1-kc
+                </para></listitem>
+            </itemizedlist></para>
+        </section>                                                                                        
+        <section><title>        Improvement
+        </title>
+            <para><itemizedlist>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7259'>KULRICE-7259</link>] -         Old code related to Object Remoting is still there in BaseResourceLoader
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7496'>KULRICE-7496</link>] -         Backport performance optimizations for how action list caching is handled from KULRICE-6849
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7497'>KULRICE-7497</link>] -         Action List should better leverage ActionItemActionListExtension, DocumentRouteHeaderValueActionListExtension, and more efficient eager loading to improve performance
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7526'>KULRICE-7526</link>] -         Improve performance of daily and weekly email jobs to avoid deadlocks 
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7558'>KULRICE-7558</link>] -         Default sizes for Rice caches are too small and timeToLiveSeconds is not configured properly
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7569'>KULRICE-7569</link>] -         Add the ability to disable individual spring caches via a configuration parameter
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7582'>KULRICE-7582</link>] -         Add support for Field.DROPDOWN_REFRESH to translation between KNS Row/Field and RemotableAttributeField objects in FieldUtils
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7584'>KULRICE-7584</link>] -         org.kuali.rice.kew.rule.MassRuleAttribute is not using generics on it&#39;s collections
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7631'>KULRICE-7631</link>] -         Performance hit on creating XPath instances during heavy use of XML routing in workflow
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7633'>KULRICE-7633</link>] -         BusClientFailoverProxy needs to be handling org.apache.cxf.transport.http.HTTPException as a failover exception
+                </para></listitem>
+            </itemizedlist></para>
+        </section>                                                                                                                            
+        <section><title>        Task
+        </title>
+            <para><itemizedlist>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-6069'>KULRICE-6069</link>] -         User&#39;s Guide: Review &amp; Update KIM Chapter
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-6428'>KULRICE-6428</link>] -         IntrospectionException - Type mismatch between read and write methods
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7328'>KULRICE-7328</link>] -         Document that services in KimType table should contain namespaces
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7406'>KULRICE-7406</link>] -         Manually cache permissionService.isAuthorized* and roleService.principalHasRole methods
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7427'>KULRICE-7427</link>] -         Provide &quot;cleaned&quot; master Rice dataset for client applications
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7500'>KULRICE-7500</link>] -         Update role/permission/responsibility caching to use the dynamicRoleMembership to avoid caching dynamic roles, instead of a blanket disregard for any derived roles
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7516'>KULRICE-7516</link>] -         Update &quot;Intro to Rice&quot; document to have info on all of the rice modules
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7614'>KULRICE-7614</link>] -         RuleTemplateBo.getRoles needs to check Attribute is a WorkflowAttribute before trying to add the roles names
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7788'>KULRICE-7788</link>] -         Improve exception handling in RoleServiceImpl#principalHasRole related to role type services
+                </para></listitem>
+                <listitem><para>[<link xlink:href='https://jira.kuali.org/browse/KULRICE-7959'>KULRICE-7959</link>] -         Release commons-beanutils-1.8.3-kuali-4  and update http://svn.kuali.org/repos/rice/branches/rice-2.1-kc with that version
+                </para></listitem>
+            </itemizedlist></para>
+            
+        </section>
+                                                                                                                                    
+    </section>        
+</article>
