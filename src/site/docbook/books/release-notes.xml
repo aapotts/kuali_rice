@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2005-2013 The Kuali Foundation
+
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.opensource.org/licenses/ecl2.php
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0">
+    <info>
+        <title>Kuali Rice ${project.version} Release Notes</title>
+        <edition>${project.version}</edition>
+        <pubdate>Released: ${docbook.build.timestamp}</pubdate>
+    </info>
+    <section xml:id="overview" xreflabel="Overview">
+        <title>Overview</title>
+        <para>Welcome to Rice ${project.version}! </para>
+        <section>
+            <title>Release Highlights</title>
+            <para> Rice ${project.version} is a bug fix release consisting of one correction for a
+                version compatibility issue with Rice 2.1.4.</para>
+        </section>
+        <section>
+            <title>Download</title>
+            <para>Kuali Rice ${project.version} can be downloaded from the Rice website at <link xlink:show="new" xlink:href="http://kuali.org/rice/download">http://kuali.org/rice/download</link>.</para>
+            <para>There are three different distributions of Rice available: source, binary and
+              server. Please read the <link xlink:href="http://site.kuali.org/rice/${project.version}/reference/html/IG.html">Installation Guide</link> for
+                more details on each of these distributions.</para>
+            <para>Applications can also consume Rice from the maven site at <link
+                    xlink:href="http://search.maven.org/#search|ga|1|org.kuali.rice"
+                    >http://search.maven.org/#search|ga|1|org.kuali.rice</link>.</para>
+        </section>
+        <section>
+            <title>Documentation</title>
+            <para>API Documentation can be found at <link xlink:show="new" xlink:href="http://site.kuali.org/rice/${project.version}/apidocs/index.html">http://site.kuali.org/rice/${project.version}/apidocs/index.html</link></para>
+            <para>Formal documentation can be found at <link xlink:show="new"
+                    xlink:href="http://site.kuali.org/rice/${project.version}/reference/html/portal.html"
+                    >http://site.kuali.org/rice/${project.version}/reference/html/portal.html</link>.
+                This documentation is still in the process of review and update which will continue
+                through subsequent releases, so please follow the notes in each document to report
+                any outdated information.</para>
+        </section>
+        <section>
+            <title>Contact</title>
+            <para>If you encounter any difficulty, please don't hesitate to contact the Rice team on
+                our public collaboration mailing list at <email>rice.collab@kuali.org</email>.
+                Please indicate that you are using the ${project.version} version of Rice.</para>
+        </section>
+    </section>
+    <section xml:id="items_addressed_in_rice">
+        <title>Items Addressed in Rice ${project.version}</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>[<link xlink:href="https://jira.kuali.org/browse/KULRICE-9253"
+                            >KULRICE-9253</link>] - Backwards compabitility broken for RoleTypeService</para>
+                    </listitem>
+                </itemizedlist>           
+        
+    </section>
+</article>
