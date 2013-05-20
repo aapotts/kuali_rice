@@ -118,7 +118,7 @@
             </tr>
             </c:if>
             <tr>
-              <td id="buttonRow" height="30" colspan="2"><input type="submit" value="Login" class="btn btn-primary login-button"/>
+              <td id="buttonRow" height="30" colspan="2" align="center"><input type="submit" value="Login"/>
               <!-- input type="image" title="Click to login." value="login" name="imageField" src="${pageContext.request.contextPath}/rice-portal/images/tinybutton-login.gif"/ -->
               </td>
             </tr>
