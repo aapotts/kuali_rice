@@ -23,7 +23,7 @@
     <version>2.1.1</version>
   </parent>
   <artifactId>rice-kew-api</artifactId>
-  <version>2.1.1-rsmart</version>
+  <version>2.1.1.0-rsmart-SNAPSHOT</version>
   <name>Rice KEW API</name>
 
   <dependencies>
