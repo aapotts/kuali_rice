@@ -21,7 +21,7 @@
     <parent>
         <artifactId>rice-kim</artifactId>
         <groupId>org.kuali.rice</groupId>
-        <version>2.1.7</version>
+        <version>2.1.7.0-rsmart-SNAPSHOT</version>
     </parent>
     <artifactId>rice-kim-impl</artifactId>
     <name>Rice KIM Impl</name>
@@ -29,47 +29,47 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-kim-api</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-kim-framework</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-krad-app-framework</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-krad-web-framework</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
          <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-kns</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-core-framework</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-core-impl</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-core-service-framework</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>rice-core-service-impl</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.7</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

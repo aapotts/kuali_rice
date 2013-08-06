@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.kuali.rice</groupId>
     <artifactId>rice</artifactId>
-    <version>2.1.7</version>
+    <version>2.1.7.0-rsmart-SNAPSHOT</version>
   </parent>
   <artifactId>rice-impl</artifactId>
 
@@ -49,117 +49,117 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-api</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-kew-api</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-ken-api</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-kew-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-kim-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-framework</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-service-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-service-web</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-web</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-ksb-client-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-ksb-server-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-location-api</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-location-framework</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-location-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-location-web</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-ksb-api</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
 
     <!-- Optional dependency on KRMS api, only needed if wanting to execute KRMS engine from workflow -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-krms-api</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-edl-framework</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
 
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-krad-app-framework</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-krad-web-framework</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-kns</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
 
     <dependency>

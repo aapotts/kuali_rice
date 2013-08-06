@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.kuali.rice</groupId>
     <artifactId>rice-it</artifactId>
-    <version>2.1.7</version>
+    <version>2.1.7.0-rsmart-SNAPSHOT</version>
   </parent>
   <artifactId>rice-it-krad</artifactId>
 
@@ -37,55 +37,55 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-location-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-service-api</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-service-framework</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-service-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-it-internal-tools</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-kns</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-krad-web-framework</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <artifactId>rice-krad-web-framework</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
@@ -93,7 +93,7 @@
 
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <artifactId>rice-krad-app-framework</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
@@ -103,7 +103,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-edl-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>

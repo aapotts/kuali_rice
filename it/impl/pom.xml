@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.kuali.rice</groupId>
     <artifactId>rice-it</artifactId>
-    <version>2.1.7</version>
+    <version>2.1.7.0-rsmart-SNAPSHOT</version>
   </parent>
   <artifactId>rice-it-impl</artifactId>
 
@@ -34,19 +34,19 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-it-internal-tools</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>rice-core-impl</artifactId>
-      <version>${project.version}</version>
+      <version>2.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
