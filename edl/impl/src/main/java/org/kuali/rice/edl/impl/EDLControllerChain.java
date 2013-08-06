@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPathFactory;
 import java.util.Stack;
 
 
@@ -93,7 +94,8 @@ public class EDLControllerChain {
 		edlContext.setUserSession(GlobalVariables.getUserSession());
 		edlContext.setTransformer(transformer);
 		edlContext.setRequestParser(requestParser);
-		return edlContext;
+        edlContext.setXpath(XPathFactory.newInstance().newXPath());
+        return edlContext;
 	}
 
 }

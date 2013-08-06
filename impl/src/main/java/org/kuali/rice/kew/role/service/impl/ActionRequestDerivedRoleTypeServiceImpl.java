@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ public class ActionRequestDerivedRoleTypeServiceImpl extends DerivedRoleTypeServ
 	private static final String APPROVE_REQUEST_RECIPIENT_ROLE_NAME = "Approve Request Recipient";
 	private static final String ACKNOWLEDGE_REQUEST_RECIPIENT_ROLE_NAME = "Acknowledge Request Recipient";
 	private static final String FYI_REQUEST_RECIPIENT_ROLE_NAME = "FYI Request Recipient";
+    private static final String COMPLETE_REQUEST_RECIPIENT_ROLE_NAME = "Complete Request Recipient";
 
     @Override
     protected List<String> getRequiredAttributes() {
@@ -134,6 +135,15 @@ public class ActionRequestDerivedRoleTypeServiceImpl extends DerivedRoleTypeServ
 					}
 					return false;
 				}
+                if (COMPLETE_REQUEST_RECIPIENT_ROLE_NAME.equals(roleName)) {
+                    for ( ActionRequest ar : actionRequests ) {
+                        if ( ar.getActionRequested().getCode().equals( KewApiConstants.ACTION_REQUEST_COMPLETE_REQ )
+                                && ar.getStatus().getCode().equals( ActionRequestStatus.ACTIVATED.getCode() ) ) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
 			}
 			return false;
 		} catch (RiceIllegalArgumentException e) {
@@ -142,9 +152,10 @@ public class ActionRequestDerivedRoleTypeServiceImpl extends DerivedRoleTypeServ
 	}
 
 	/**
-	 * Returns false, as action requests change quite often so membership in this role is highly volatile
-	 * 
-	 * @see org.kuali.rice.kns.kim.role.RoleTypeServiceBase#dynamicRoleMembership(java.lang.String, java.lang.String)
+	 * Determines if the role specified by the given namespace and role name has a dynamic role membership.
+     * Returns true, as action requests change quite often so membership in this role is highly volatile
+     *
+     * @see RoleTypeService#dynamicRoleMembership(String, String)
 	 */
 	@Override
 	public boolean dynamicRoleMembership(String namespaceCode, String roleName) {
@@ -156,7 +167,7 @@ public class ActionRequestDerivedRoleTypeServiceImpl extends DerivedRoleTypeServ
             throw new RiceIllegalArgumentException("roleName was null or blank");
         }
 
-        return false;
+        return true;
 	}
 	
 }

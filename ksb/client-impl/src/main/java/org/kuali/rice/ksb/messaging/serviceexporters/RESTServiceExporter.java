@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ public class RESTServiceExporter extends AbstractWebServiceExporter implements S
 
 	private static final Logger LOG = Logger.getLogger(RESTServiceExporter.class);
 
-	public RESTServiceExporter(RestServiceDefinition serviceDefinition, Bus cxfBus, ServerRegistry cxfServerRegistry) {
-		super(serviceDefinition, cxfBus, cxfServerRegistry);
+	public RESTServiceExporter(RestServiceDefinition serviceDefinition, Bus cxfBus) {
+		super(serviceDefinition, cxfBus);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -287,4 +287,14 @@ public class ActionRequestDAOOjbImpl extends PersistenceBrokerDaoSupport impleme
 
         return new ArrayList<ActionRequestValue>(this.getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(ActionRequestValue.class, crit)));
 	}
+
+    @Override
+    public ActionRequestValue getRoleActionRequestByActionTakenId(String actionTakenId) {
+        Criteria crit = new Criteria();
+        crit.addEqualTo("actionTakenId", actionTakenId);
+        crit.addEqualTo("currentIndicator", true);
+        crit.addEqualTo("recipientTypeCd", RecipientType.ROLE.getCode());
+        crit.addIsNull("parentActionRequest");
+        return (ActionRequestValue) this.getPersistenceBrokerTemplate().getObjectByQuery(new QueryByCriteria(ActionRequestValue.class, crit));
+    }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,12 +201,14 @@ public class ExceptionIncident implements KualiExceptionIncident {
             String lm=String.format("ENTRY");
             LOG.trace(lm);
         }
-        
+        String app = KRADServiceLocator.getKualiConfigurationService().
+				getPropertyValueAsString("application.id");
         String env= KRADServiceLocator.getKualiConfigurationService().
                 getPropertyValueAsString("environment");
-        String format="%s:%s:%s";
+        String format="%s:%s:%s:%s";
         String componentName=properties.get(COMPONENT_NAME);
         String subject=String.format(format,
+        		app,
                 env,
                 (componentName==null)?"":componentName,
                 exception.getMessage());

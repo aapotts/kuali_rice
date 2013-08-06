@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,8 @@ public class ServiceRegistryAction extends KSBAction {
     	List<ServiceInfo> serviceInfos = serviceRegistry.getAllOnlineServices();
     	List<String> serviceEndpointsToDelete = new ArrayList<String>();
     	for (ServiceInfo serviceInfo : serviceInfos) {
-    		if (serviceInfo.getServerIpAddress().equals("localhost")) {
+    		if (serviceInfo.getServerIpAddress().equals("localhost") ||
+                serviceInfo.getEndpointUrl().contains("localhost")) {
     			serviceEndpointsToDelete.add(serviceInfo.getServiceId());
     		}
     	}

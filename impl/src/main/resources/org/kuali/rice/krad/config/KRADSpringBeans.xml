@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -129,6 +129,7 @@
         <value>classpath:org/kuali/rice/krad/uif/UifWidgetDefinitions.xml</value>
         <value>classpath:org/kuali/rice/krad/uif/UifConfigurationDefinitions.xml</value>
         <value>classpath:org/kuali/rice/krad/uif/UifRiceDefinitions.xml</value>
+        <value>classpath:org/kuali/rice/krad/uif/UifInitiateDocumentInfoDefinitions.xml</value>
       </list>
     </property>
     <property name="packagePrefixes">
@@ -226,6 +227,7 @@
         <value>classpath:org/kuali/rice/krad/uif/UifLayoutManagerDefinitions.xml</value>
         <value>classpath:org/kuali/rice/krad/uif/UifWidgetDefinitions.xml</value>
         <value>classpath:org/kuali/rice/krad/uif/UifViewPageDefinitions.xml</value>
+        <value>classpath:org/kuali/rice/krad/uif/UifInitiateDocumentInfoDefinitions.xml</value>
       </list>
     </property>
   </bean>
@@ -256,6 +258,8 @@
   <bean id="mailService" class="org.kuali.rice.krad.service.impl.MailServiceImpl">
     <property name="mailer" ref="mailer"/>
     <property name="batchMailingList" value="${mailing.list.batch}"/>
+    <property name="nonProductionNotificationMailingList" value="${nonproduction.notification.mailing.list}" />
+    <property name="realNotificationsEnabled" value="${real.notifications.enabled}" />
   </bean>
 
   <bean id="kradExceptionIncidentService" class="org.kuali.rice.krad.service.impl.KualiExceptionIncidentServiceImpl">
@@ -272,7 +276,20 @@
     <property name="incidentMailingList" value="${kr.incident.mailing.list}"/>
   </bean>
 
+  <bean id="kradFeedbackService" class="org.kuali.rice.krad.service.impl.KualiFeedbackServiceImpl">
+    <property name="mailer" ref="mailer" />
+    <property name="messageTemplate">
+      <bean class="org.kuali.rice.core.api.mail.MailMessage">
+        <property name="fromAddress">
+          <value>${kr.feedback.mailing.list}</value>
+        </property>
+      </bean>
+    </property>
+  </bean>
+
   <bean id="xmlObjectSerializerService" class="org.kuali.rice.krad.service.impl.XmlObjectSerializerServiceImpl"></bean>
+
+  <bean id="xmlObjectSerializerIgnoreMissingFieldsService" class="org.kuali.rice.krad.service.impl.XmlObjectSerializerIgnoreMissingFieldsServiceImpl"></bean>
 
   <bean id="documentService" class="org.kuali.rice.krad.service.impl.DocumentServiceImpl">
     <property name="documentDao">
@@ -310,9 +327,6 @@
   <bean id="kualiRuleService" class="org.kuali.rice.krad.service.impl.KualiRuleServiceImpl">
     <property name="documentDictionaryService">
       <ref bean="documentDictionaryService"/>
-    </property>
-    <property name="dictionaryValidationService">
-      <ref bean="dictionaryValidationService"/>
     </property>
     <property name="dataDictionaryService">
       <ref bean="dataDictionaryService"/>
@@ -842,6 +856,9 @@
         class="org.kuali.rice.krad.kim.DocumentTypeAndNodeOrStatePermissionTypeServiceImpl"/>
 
   <bean id="namespacePermissionTypeService" class="org.kuali.rice.krad.kim.NamespacePermissionTypeServiceImpl"/>
+
+  <bean id="documentTypeAndNodeAndRouteStatusPermissionTypeService"
+        class="org.kuali.rice.krad.kim.DocumentTypeAndNodeAndRouteStatusPermissionTypeServiceImpl"/>
 
   <bean id="namespaceOrComponentPermissionTypeService"
         class="org.kuali.rice.krad.kim.NamespaceWildcardAllowedAndOrStringExactMatchPermissionTypeServiceImpl">

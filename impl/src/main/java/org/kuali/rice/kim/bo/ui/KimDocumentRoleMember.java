@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -283,5 +283,19 @@ public class KimDocumentRoleMember  extends KimDocumentBoActivatableToFromEditab
 	public void setMemberFullName(String memberFullName) {
 		this.memberFullName = memberFullName;
 	}
+
+    public boolean isMemberNameNull() {
+        if (memberName==null) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isMemberNameSpaceCodeNull() {
+        if (memberNamespaceCode==null) {
+            return true;
+        }
+        return false;
+    }
 
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@
         <value>krad/plugins/jquery/jquery-1.6.3.js</value>
         <value>krad/plugins/jqueryUI/jquery-ui-1.8.9.js</value>
         <value>krad/plugins/cookie/jquery.cookie.js</value>
-        <value>krad/plugins/postmsg/jquery.ba-postmessage.js</value>
         <value>krad/plugins/jgrowl/jquery.jgrowl.js</value>
         <value>krad/plugins/blockUI/jquery.blockUI.js</value>
         <value>krad/plugins/watermark/jquery.watermark.js</value>

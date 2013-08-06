@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -157,7 +157,7 @@
         <bean parent="Uif-InputField" p:propertyName="memberTypeCode" p:defaultValue="P" p:required="true"/>
         <bean parent="PeopleFlow-Member" p:required="true"/>
         <bean parent="Uif-InputField" p:propertyName="actionRequestPolicyCode" p:refreshWhenChanged="#lp.memberTypeCode"
-              p:progressiveRender="#line.memberTypeCode eq 'R'" p:defaultValue="F" p:required="true"/>
+              p:progressiveRender="#line.memberTypeCode eq 'R' or #line.memberTypeCode eq 'G'" p:defaultValue="F" p:required="true"/>
       </list>
     </property>
     <property name="subCollections">
@@ -186,7 +186,7 @@
         <bean id="PeopleFlow-MemberDelegate" parent="PeopleFlow-Member" p:required="true"/>
         <bean parent="Uif-InputField" p:propertyName="delegationTypeCode" p:required="true"/>
         <bean parent="Uif-InputField" p:propertyName="actionRequestPolicyCode" p:refreshWhenChanged="#lp.memberTypeCode"
-              p:progressiveRender="#line.memberTypeCode eq 'R'" p:defaultValue="F" p:required="true"/>
+              p:progressiveRender="#line.memberTypeCode eq 'R' or #line.memberTypeCode eq 'G'" p:defaultValue="F" p:required="true"/>
       </list>
     </property>
   </bean>
@@ -197,8 +197,8 @@
   ********************************************************************************************************************
   -->
   <bean id="PeopleFlow-Member" parent="Uif-InputField" p:propertyName="memberName" p:label="Member"
-        p:refreshWhenChanged="#lp.memberTypeCode" p:readOnly="@{(#line.memberTypeCode ne 'P') or #view.readOnly}"
-        p:fieldLookup.render="@{!view.readOnly}" p:resetDataOnRefresh="true">
+        p:refreshWhenChanged="#lp.memberTypeCode" p:readOnly="@{#view.readOnly}"
+        p:fieldLookup.render="@{!#view.readOnly}" p:resetDataOnRefresh="true">
     <property name="control">
       <bean parent="Uif-KimPersonControl" p:principalIdPropertyName="memberId" p:personNamePropertyName="person.name" p:watermarkText="Name"/>
     </property>
@@ -212,13 +212,13 @@
         <bean parent="Uif-ConditionalBeanPropertyReplacer" p:propertyName="fieldLookup" p:condition="#line.memberTypeCode eq 'R'">
           <property name="replacement">
             <bean parent="Uif-QuickFinder" p:dataObjectClassName="org.kuali.rice.kim.impl.role.RoleBo"
-                  p:fieldConversions="id:memberId" p:render="@{!view.readOnly}"/>
+                  p:fieldConversions="id:memberId" p:render="@{!#view.readOnly}"/>
           </property>
         </bean>
         <bean parent="Uif-ConditionalBeanPropertyReplacer" p:propertyName="fieldLookup" p:condition="#line.memberTypeCode eq 'G'">
           <property name="replacement">
             <bean parent="Uif-QuickFinder" p:dataObjectClassName="org.kuali.rice.kim.impl.group.GroupBo"
-                  p:fieldConversions="id:memberId" p:render="@{!view.readOnly}"/>
+                  p:fieldConversions="id:memberId" p:render="@{!#view.readOnly}"/>
           </property>
         </bean>
       </list>

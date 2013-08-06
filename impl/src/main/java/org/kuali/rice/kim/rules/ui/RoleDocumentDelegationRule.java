@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.kuali.rice.core.api.util.RiceKeyConstants;
 import org.kuali.rice.kim.bo.ui.RoleDocumentDelegation;
 import org.kuali.rice.kim.rule.event.ui.AddDelegationEvent;
 import org.kuali.rice.kim.rule.ui.AddDelegationRule;
-import org.kuali.rice.krad.rules.DocumentRuleBase;
+import org.kuali.rice.kns.rules.DocumentRuleBase;
 import org.kuali.rice.krad.util.GlobalVariables;
 
 /**

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.kuali.rice.core.api.util.jaxb.DateTimeAdapter;
 import org.kuali.rice.core.api.util.jaxb.MultiValuedStringMapAdapter;
 import org.kuali.rice.kew.api.document.DocumentStatus;
 import org.kuali.rice.kew.api.document.DocumentStatusCategory;
+import org.springframework.util.CollectionUtils;
 import org.w3c.dom.Element;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -39,7 +40,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +84,11 @@ import java.util.Map;
     DocumentSearchCriteria.Elements.MAX_RESULTS,
     DocumentSearchCriteria.Elements.IS_ADVANCED_SEARCH,
     DocumentSearchCriteria.Elements.SEARCH_OPTIONS,
+    DocumentSearchCriteria.Elements.APPLICATION_DOCUMENT_STATUSES,
+    DocumentSearchCriteria.Elements.DOC_SEARCH_USER_ID,
+    DocumentSearchCriteria.Elements.INITIATOR_PRINCIPAL_ID,
+    DocumentSearchCriteria.Elements.VIEWER_PRINCIPAL_ID,
+    DocumentSearchCriteria.Elements.APPROVER_PRINCIPAL_ID,
     CoreConstants.CommonElements.FUTURE_ELEMENTS
 })
 public final class DocumentSearchCriteria extends AbstractDataTransferObject implements DocumentSearchCriteriaContract {
@@ -113,8 +118,14 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
     @XmlElement(name = Elements.INITIATOR_PRINCIPAL_NAME, required = false)
     private final String initiatorPrincipalName;
 
+    @XmlElement(name = Elements.INITIATOR_PRINCIPAL_ID, required = false)
+    private final String initiatorPrincipalId;
+
     @XmlElement(name = Elements.VIEWER_PRINCIPAL_NAME, required = false)
     private final String viewerPrincipalName;
+
+    @XmlElement(name = Elements.VIEWER_PRINCIPAL_ID, required = false)
+    private final String viewerPrincipalId;
 
     @XmlElement(name = Elements.GROUP_VIEWER_ID, required = false)
     private final String groupViewerId;
@@ -124,6 +135,9 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
     
     @XmlElement(name = Elements.APPROVER_PRINCIPAL_NAME, required = false)
     private final String approverPrincipalName;
+
+    @XmlElement(name = Elements.APPROVER_PRINCIPAL_ID, required = false)
+    private final String approverPrincipalId;
 
     @XmlElement(name = Elements.ROUTE_NODE_NAME, required = false)
     private final String routeNodeName;
@@ -137,7 +151,6 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
     @XmlElementWrapper(name = Elements.ADDITIONAL_DOCUMENT_TYPE_NAMES, required = false)
     @XmlElement(name = Elements.ADDITIONAL_DOCUMENT_TYPE_NAME, required = false)
     private final List<String> additionalDocumentTypeNames;
-
 
     @XmlElement(name = Elements.DATE_CREATED_FROM, required = false)
     @XmlJavaTypeAdapter(DateTimeAdapter.class)
@@ -199,6 +212,16 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
     @XmlJavaTypeAdapter(MultiValuedStringMapAdapter.class)
     private final Map<String, List<String>> searchOptions;
 
+    /**
+     * @since 2.1.2
+     */
+    @XmlElement(name = Elements.APPLICATION_DOCUMENT_STATUS, required = false)
+    @XmlElementWrapper(name = Elements.APPLICATION_DOCUMENT_STATUSES, required = false)
+    private final List<String> applicationDocumentStatuses;
+
+    @XmlElement(name = Elements.DOC_SEARCH_USER_ID, required = false)
+    private final String docSearchUserId;
+
     @SuppressWarnings("unused")
     @XmlAnyElement
     private final Collection<Element> _futureElements = null;
@@ -214,10 +237,13 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         this.applicationDocumentId = null;
         this.applicationDocumentStatus = null;
         this.initiatorPrincipalName = null;
+        this.initiatorPrincipalId = null;
         this.viewerPrincipalName = null;
+        this.viewerPrincipalId = null;
         this.groupViewerId = null;
         this.groupViewerName = null;
         this.approverPrincipalName = null;
+        this.approverPrincipalId = null;
         this.routeNodeName = null;
         this.routeNodeLookupLogic = null;
         this.documentTypeName = null;
@@ -238,6 +264,8 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         this.startAtIndex = null;
         this.maxResults = null;
         this.isAdvancedSearch = null;
+        this.docSearchUserId = null;
+        this.applicationDocumentStatuses = null;
     }
 
     private DocumentSearchCriteria(Builder builder) {
@@ -248,10 +276,13 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         this.applicationDocumentId = builder.getApplicationDocumentId();
         this.applicationDocumentStatus = builder.getApplicationDocumentStatus();
         this.initiatorPrincipalName = builder.getInitiatorPrincipalName();
+        this.initiatorPrincipalId = builder.getInitiatorPrincipalId();
         this.viewerPrincipalName = builder.getViewerPrincipalName();
+        this.viewerPrincipalId = builder.getViewerPrincipalId();
         this.groupViewerId = builder.getGroupViewerId();
         this.groupViewerName = builder.getGroupViewerName();
         this.approverPrincipalName = builder.getApproverPrincipalName();
+        this.approverPrincipalId = builder.getApproverPrincipalId();
         this.routeNodeName = builder.getRouteNodeName();
         this.routeNodeLookupLogic = builder.getRouteNodeLookupLogic();
         this.documentTypeName = builder.getDocumentTypeName();
@@ -273,6 +304,8 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         this.startAtIndex = builder.getStartAtIndex();
         this.maxResults = builder.getMaxResults();
         this.isAdvancedSearch = builder.getIsAdvancedSearch();
+        this.docSearchUserId = builder.getDocSearchUserId();
+        this.applicationDocumentStatuses = builder.getApplicationDocumentStatuses();
     }
 
     @Override
@@ -300,19 +333,42 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         return this.applicationDocumentId;
     }
 
+    /**
+     * @deprecated use {@link #getApplicationDocumentStatuses()} instead
+     * @return
+     */
+    @Deprecated
     @Override
     public String getApplicationDocumentStatus() {
         return this.applicationDocumentStatus;
     }
 
+    /**
+     * @deprecated use {@link #getInitiatorPrincipalId()} instead
+     */
+    @Deprecated
     @Override
     public String getInitiatorPrincipalName() {
         return this.initiatorPrincipalName;
     }
 
     @Override
+    public String getInitiatorPrincipalId() {
+        return this.initiatorPrincipalId;
+    }
+
+    /**
+     * @deprecated use {@link #getViewerPrincipalId()} instead
+     */
+    @Deprecated
+    @Override
     public String getViewerPrincipalName() {
         return this.viewerPrincipalName;
+    }
+
+    @Override
+    public String getViewerPrincipalId() {
+        return this.viewerPrincipalId;
     }
 
     @Override
@@ -325,9 +381,18 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         return this.groupViewerName;
     }
 
+    /**
+     * @deprecated use {@link #getApproverPrincipalId()} instead
+     */
+    @Deprecated
     @Override
     public String getApproverPrincipalName() {
         return this.approverPrincipalName;
+    }
+
+    @Override
+    public String getApproverPrincipalId() {
+        return this.approverPrincipalId;
     }
 
     @Override
@@ -431,6 +496,18 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
     }
 
     /**
+     * @since 2.1.2
+     */
+    @Override
+    public List<String> getApplicationDocumentStatuses() {
+        return applicationDocumentStatuses;
+    }
+
+    @Override
+    public String getDocSearchUserId(){
+        return docSearchUserId;
+    }
+    /**
      * A builder which can be used to construct {@link DocumentSearchCriteria} instances.  Enforces the constraints of
      * the {@link DocumentSearchCriteriaContract}.
      */
@@ -443,10 +520,13 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         private String applicationDocumentId;
         private String applicationDocumentStatus;
         private String initiatorPrincipalName;
+        private String initiatorPrincipalId;
         private String viewerPrincipalName;
+        private String viewerPrincipalId;
         private String groupViewerId;
         private String groupViewerName;
         private String approverPrincipalName;
+        private String approverPrincipalId;
         private String routeNodeName;
         private RouteNodeLookupLogic routeNodeLookupLogic;
         private String documentTypeName;
@@ -467,6 +547,8 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         private Integer startAtIndex;
         private Integer maxResults;
         private String isAdvancedSearch;
+        private String docSearchUserId;
+        private List<String> applicationDocumentStatuses;
 
         private Builder() {
             setDocumentStatuses(new ArrayList<DocumentStatus>());
@@ -474,6 +556,7 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             setAdditionalDocumentTypeNames(new ArrayList<String>());
             setDocumentAttributeValues(new HashMap<String, List<String>>());
             setSearchOptions(new HashMap<String, List<String>>());
+            setApplicationDocumentStatuses(new ArrayList<String>());
         }
 
         /**
@@ -508,12 +591,14 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             }
             builder.setTitle(contract.getTitle());
             builder.setApplicationDocumentId(contract.getApplicationDocumentId());
-            builder.setApplicationDocumentStatus(contract.getApplicationDocumentStatus());
             builder.setInitiatorPrincipalName(contract.getInitiatorPrincipalName());
+            builder.setInitiatorPrincipalId(contract.getInitiatorPrincipalId());
             builder.setViewerPrincipalName(contract.getViewerPrincipalName());
+            builder.setViewerPrincipalId(contract.getViewerPrincipalId());
             builder.setGroupViewerId(contract.getGroupViewerId());
             builder.setGroupViewerName(contract.getGroupViewerName());
             builder.setApproverPrincipalName(contract.getApproverPrincipalName());
+            builder.setApproverPrincipalId(contract.getApproverPrincipalId());
             builder.setRouteNodeName(contract.getRouteNodeName());
             builder.setRouteNodeLookupLogic(contract.getRouteNodeLookupLogic());
             builder.setDocumentTypeName(contract.getDocumentTypeName());
@@ -540,6 +625,13 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             builder.setStartAtIndex(contract.getStartAtIndex());
             builder.setMaxResults(contract.getMaxResults());
             builder.setIsAdvancedSearch(contract.getIsAdvancedSearch());
+
+            // Set applicationDocumentStatuses (plural!)
+            builder.setApplicationDocumentStatuses(contract.getApplicationDocumentStatuses());
+            // Set applicationDocumentStatus (singular!)
+            builder.setApplicationDocumentStatus(contract.getApplicationDocumentStatus());
+            builder.setDocSearchUserId(contract.getDocSearchUserId());
+
             return builder;
         }
 
@@ -576,19 +668,41 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             return this.applicationDocumentId;
         }
 
+        /**
+         * @deprecated use {@link #getApplicationDocumentStatuses()} instead
+         */
+        @Deprecated
         @Override
         public String getApplicationDocumentStatus() {
             return this.applicationDocumentStatus;
         }
 
+        /**
+         *  @deprecated use {@link #getInitiatorPrincipalId()} instead
+         */
+        @Deprecated
         @Override
         public String getInitiatorPrincipalName() {
             return this.initiatorPrincipalName;
         }
 
         @Override
+        public String getInitiatorPrincipalId() {
+            return this.initiatorPrincipalId;
+        }
+
+        /**
+         * @deprecated use {@link #getViewerPrincipalId()} instead
+         */
+        @Deprecated
+        @Override
         public String getViewerPrincipalName() {
             return this.viewerPrincipalName;
+        }
+
+        @Override
+        public String getViewerPrincipalId() {
+            return this.viewerPrincipalId;
         }
 
         @Override
@@ -600,10 +714,19 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         public String getGroupViewerName() {
             return this.groupViewerName;
         }
-        
+
+        /**
+         * @deprecated use {@link #getApproverPrincipalId()} instead
+         */
+        @Deprecated
         @Override
         public String getApproverPrincipalName() {
             return this.approverPrincipalName;
+        }
+
+        @Override
+        public String getApproverPrincipalId() {
+            return this.approverPrincipalId;
         }
 
         @Override
@@ -706,6 +829,14 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             return this.isAdvancedSearch;
         }
 
+        public List<String> getApplicationDocumentStatuses() {
+            return applicationDocumentStatuses;
+        }
+
+        public String getDocSearchUserId(){
+          return docSearchUserId;
+        }
+
         public void setDocumentId(String documentId) {
             this.documentId = documentId;
         }
@@ -726,16 +857,37 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             this.applicationDocumentId = applicationDocumentId;
         }
 
+        /**
+         * @deprecated use {@link #setApplicationDocumentStatuses(java.util.List)} instead
+         */
+        @Deprecated
         public void setApplicationDocumentStatus(String applicationDocumentStatus) {
             this.applicationDocumentStatus = applicationDocumentStatus;
         }
 
+        /**
+         * @deprecated use {@link #setInitiatorPrincipalId(String)} instead
+         * @param initiatorPrincipalName
+         */
         public void setInitiatorPrincipalName(String initiatorPrincipalName) {
             this.initiatorPrincipalName = initiatorPrincipalName;
         }
 
+        public void setInitiatorPrincipalId(String initiatorPrincipalId) {
+            this.initiatorPrincipalId = initiatorPrincipalId;
+        }
+
+        /**
+         * @deprecated use {@link #setViewerPrincipalId(String)} instead
+         * @param viewerPrincipalName
+         */
+        @Deprecated
         public void setViewerPrincipalName(String viewerPrincipalName) {
             this.viewerPrincipalName = viewerPrincipalName;
+        }
+
+        public void setViewerPrincipalId(String viewerPrincipalId) {
+            this.viewerPrincipalId = viewerPrincipalId;
         }
 
         public void setGroupViewerId(String groupViewerId) {
@@ -746,8 +898,17 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
             this.groupViewerName = groupViewerName;
         }
 
+        /**
+         * @deprecated use {@link #setApproverPrincipalId(String)} instead
+         * @param approverPrincipalName
+         */
+        @Deprecated
         public void setApproverPrincipalName(String approverPrincipalName) {
             this.approverPrincipalName = approverPrincipalName;
+        }
+
+        public void setApproverPrincipalId(String approverPrincipalId) {
+            this.approverPrincipalId = approverPrincipalId;
         }
 
         public void setRouteNodeName(String routeNodeName) {
@@ -843,6 +1004,16 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         }
 
         /**
+         * @since 2.1.2
+         */
+        public void setApplicationDocumentStatuses(List<String> applicationDocumentStatuses) {
+            this.applicationDocumentStatuses = applicationDocumentStatuses;
+        }
+
+        public void setDocSearchUserId(String docSearchUserId){
+            this.docSearchUserId = docSearchUserId;
+        }
+        /**
          * Resets DateTimes to local TimeZone (preserving absolute time)
          * @see {@link http://jira.codehaus.org/browse/JACKSON-279}
          * @see {@link org.kuali.rice.core.util.JacksonRiceModule}
@@ -883,10 +1054,13 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         final static String APPLICATION_DOCUMENT_ID = "applicationDocumentId";
         final static String APPLICATION_DOCUMENT_STATUS = "applicationDocumentStatus";
         final static String INITIATOR_PRINCIPAL_NAME = "initiatorPrincipalName";
+        final static String INITIATOR_PRINCIPAL_ID = "initiatorPrincipalId";
         final static String VIEWER_PRINCIPAL_NAME = "viewerPrincipalName";
+        final static String VIEWER_PRINCIPAL_ID = "viewerPrincipalId";
         final static String GROUP_VIEWER_ID = "groupViewerId";
         final static String GROUP_VIEWER_NAME = "groupViewerName";
         final static String APPROVER_PRINCIPAL_NAME = "approverPrincipalName";
+        final static String APPROVER_PRINCIPAL_ID = "approverPrincipalId";
         final static String ROUTE_NODE_NAME = "routeNodeName";
         final static String ROUTE_NODE_LOOKUP_LOGIC = "routeNodeLookupLogic";
         final static String DOCUMENT_TYPE_NAME = "documentTypeName";
@@ -908,6 +1082,8 @@ public final class DocumentSearchCriteria extends AbstractDataTransferObject imp
         final static String MAX_RESULTS = "maxResults";
         final static String IS_ADVANCED_SEARCH = "isAdvancedSearch";
         final static String SEARCH_OPTIONS = "searchOptions";
+        final static String APPLICATION_DOCUMENT_STATUSES = "applicationDocumentStatuses";
+        final static String DOC_SEARCH_USER_ID = "docSearchUserId";
     }
 
 }

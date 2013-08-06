@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public final class KSBConstants {
         public static final String REGISTRY_SERVICE_URL = "rice.ksb.registry.serviceUrl";
         public static final String WEB_FORCE_ENABLE = "rice.ksb.web.forceEnable";
 
-        
+
     	private Config() {
     		throw new UnsupportedOperationException("do not call");
     	}
@@ -82,8 +82,6 @@ public final class KSBConstants {
     	public static final String BUS_IN_INTERCEPTORS = "ksbInInterceptors";
         public static final String BUS_OUT_INTERCEPTORS = "ksbOutInterceptors";
     	public static final String CXF_BUS = "cxf";
-    	public static final String CXF_SERVER_REGISTRY = "org.apache.cxf.endpoint.ServerRegistry";
-    	public static final String CXF_SERVLET_TRANSPORT_FACTORY = "org.apache.cxf.transport.servlet.ServletTransportFactory";
     	public static final String DIGITAL_SIGNATURE_SERVICE = "rice.ksb.digitalSignatureService";
     	public static final String ENCRYPTION_SERVICE = "enEncryptionService";
         public static final String EXCEPTION_MESSAGING_SERVICE = "rice.ksb.exceptionMessagingService";
@@ -101,7 +99,8 @@ public final class KSBConstants {
         public static final String THREAD_POOL_SERVICE = "rice.ksb.threadPool";
         public static final String TRANSACTION_MANAGER = "transactionManager";
         public static final String TRANSACTION_TEMPLATE = "transactionTemplate";
-        
+        public static final String BASIC_AUTHENTICATION_SERVICE = "basicAuthenticationService";
+
     	private ServiceNames() {
     		throw new UnsupportedOperationException("do not call");
     	}

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,17 @@ import org.kuali.rice.core.api.search.SearchExpressionUtils;
 import org.kuali.rice.core.api.uif.AttributeLookupSettings;
 import org.kuali.rice.core.api.uif.RemotableAttributeField;
 import org.kuali.rice.kew.api.KEWPropertyConstants;
+import org.kuali.rice.kew.api.KewApiConstants;
 import org.kuali.rice.kew.api.document.DocumentStatus;
 import org.kuali.rice.kew.api.document.DocumentStatusCategory;
 import org.kuali.rice.kew.api.document.search.DocumentSearchCriteria;
 import org.kuali.rice.kew.api.document.search.DocumentSearchCriteriaContract;
 import org.kuali.rice.kew.api.document.search.RouteNodeLookupLogic;
 import org.kuali.rice.kew.docsearch.DocumentSearchInternalUtils;
-import org.kuali.rice.kew.api.KewApiConstants;
 import org.kuali.rice.kew.doctype.bo.DocumentType;
 import org.kuali.rice.kew.framework.document.search.DocumentSearchCriteriaConfiguration;
+import org.kuali.rice.kew.impl.document.ApplicationDocumentStatusUtils;
 import org.kuali.rice.kew.service.KEWServiceLocator;
-import org.kuali.rice.kns.util.FieldUtils;
 import org.kuali.rice.krad.util.KRADConstants;
 
 import java.lang.reflect.InvocationTargetException;
@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,9 +69,12 @@ public class DocumentSearchCriteriaTranslatorImpl implements DocumentSearchCrite
             "applicationDocumentId",
             "applicationDocumentStatus",
             "initiatorPrincipalName",
+            "initiatorPrincipalId",
             "viewerPrincipalName",
+            "viewerPrincipalId",
             "groupViewerId",
             "approverPrincipalName",
+            "approverPrincipalId",
             "routeNodeName",
             "documentTypeName",
             "saveName",
@@ -132,6 +136,28 @@ public class DocumentSearchCriteriaTranslatorImpl implements DocumentSearchCrite
                 }
             }
         }
+
+        LinkedHashMap<String, List<String>> applicationDocumentStatusGroupings =
+                ApplicationDocumentStatusUtils.getApplicationDocumentStatusCategories(criteria.getDocumentTypeName());
+
+        String applicationDocumentStatusesValue = fieldValues.get(KEWPropertyConstants.DOC_SEARCH_RESULT_PROPERTY_NAME_DOC_STATUS);
+        if (StringUtils.isNotBlank(applicationDocumentStatusesValue)) {
+            String[] applicationDocumentStatuses = applicationDocumentStatusesValue.split(",");
+            for (String applicationDocumentStatus : applicationDocumentStatuses) {
+                // KULRICE-7786: support for groups (categories) of application document statuses
+                if (applicationDocumentStatus.startsWith("category:")) {
+                    String categoryCode = StringUtils.remove(applicationDocumentStatus, "category:");
+                    if (applicationDocumentStatusGroupings.containsKey(categoryCode)) {
+                        criteria.getApplicationDocumentStatuses().addAll(applicationDocumentStatusGroupings.get(categoryCode));
+                    }
+                } else {
+                    criteria.getApplicationDocumentStatuses().add(applicationDocumentStatus);
+                }
+            }
+        }
+
+        // blank the deprecated field out, it's not needed.
+        criteria.setApplicationDocumentStatus(null);
 
         return criteria.build();
     }
@@ -319,9 +345,15 @@ public class DocumentSearchCriteriaTranslatorImpl implements DocumentSearchCrite
         Map<String, AttributeLookupSettings> attributeLookupSettingsMap = getAttributeLookupSettings(criteria);
         for (String field: fields) {
             String documentAttributeName = field.substring(KewApiConstants.DOCUMENT_ATTRIBUTE_FIELD_PREFIX.length());
-            // omit the synthetic lower bound field, don't set back into doc attrib values
+            // omit the synthetic lower bound field is there is an upper bound field, don't set back into doc attrib values
             if (documentAttributeName.startsWith(KRADConstants.LOOKUP_RANGE_LOWER_BOUND_PROPERTY_PREFIX)) {
-                continue;
+                String tempDocumentAttributeName = StringUtils.substringAfter(documentAttributeName,KRADConstants.LOOKUP_RANGE_LOWER_BOUND_PROPERTY_PREFIX) ;
+                String tempField = fieldValues.get(KewApiConstants.DOCUMENT_ATTRIBUTE_FIELD_PREFIX + tempDocumentAttributeName);
+                if (StringUtils.isEmpty(tempField)) {
+                    documentAttributeName =  tempDocumentAttributeName;
+                } else {
+                    continue;
+                }
             }
             String value = fieldValues.get(field);
             AttributeLookupSettings lookupSettings = attributeLookupSettingsMap.get(documentAttributeName);

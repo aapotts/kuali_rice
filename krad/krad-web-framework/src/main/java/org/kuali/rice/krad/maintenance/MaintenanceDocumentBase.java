@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@ package org.kuali.rice.krad.maintenance;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ojb.broker.core.proxy.ProxyHelper;
+import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.core.api.util.RiceKeyConstants;
+import org.kuali.rice.kew.api.KewApiServiceLocator;
 import org.kuali.rice.kew.api.WorkflowDocument;
+import org.kuali.rice.kew.api.doctype.DocumentType;
 import org.kuali.rice.kew.framework.postprocessor.DocumentRouteStatusChange;
 import org.kuali.rice.kim.api.identity.Person;
 import org.kuali.rice.krad.bo.DocumentAttachment;
@@ -71,6 +74,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -380,7 +384,67 @@ public class MaintenanceDocumentBase extends DocumentBase implements Maintenance
     protected Object getDataObjectFromXML(String maintainableTagName) {
         String maintXml = StringUtils.substringBetween(xmlDocumentContents, "<" + maintainableTagName + ">",
                 "</" + maintainableTagName + ">");
-        return KRADServiceLocator.getXmlObjectSerializerService().fromXml(maintXml);
+
+        boolean ignoreMissingFields = false;
+        String classAndDocTypeNames = ConfigContext.getCurrentContextConfig().getProperty(KRADConstants.Config.IGNORE_MISSIONG_FIELDS_ON_DESERIALIZE);
+        if (!StringUtils.isEmpty(classAndDocTypeNames)) {
+            String classNameOnXML = StringUtils.substringBetween(xmlDocumentContents, "<" + maintainableTagName + "><", ">");
+            String classNamesNoSpaces = removeSpacesAround(classAndDocTypeNames);
+            List<String> classAndDocTypeNamesList = Arrays.asList(org.apache.commons.lang.StringUtils.split(classNamesNoSpaces, ","));
+            String originalDocTypeId = getDocumentHeader().getWorkflowDocument().getDocumentTypeId();
+            DocumentType docType = KewApiServiceLocator.getDocumentTypeService().getDocumentTypeById(originalDocTypeId);
+
+            while (docType != null && !ignoreMissingFields) {
+                for(String classNameOrDocTypeName : classAndDocTypeNamesList){
+                    if (docType.getName().equalsIgnoreCase(classNameOrDocTypeName) ||
+                        classNameOnXML.equalsIgnoreCase(classNameOrDocTypeName)) {
+                            ignoreMissingFields = true;
+                            break;
+                    }
+                }
+                if (!StringUtils.isEmpty(docType.getParentId())) {
+                    docType = KewApiServiceLocator.getDocumentTypeService().getDocumentTypeById(docType.getParentId());
+                } else {
+                    docType = null;
+                }
+            }
+        }
+        if (!ignoreMissingFields) {
+            return KRADServiceLocator.getXmlObjectSerializerService().fromXml(maintXml);
+        } else {
+            return KRADServiceLocator.getXmlObjectSerializerIgnoreMissingFieldsService().fromXml(maintXml);
+        }
+    }
+
+    /**
+     * Removes the spaces around the elements on a csv list of elements.
+     * <p>
+     * A null input will return a null output.
+     * </p>
+     *
+     * @param csv a list of elements in csv format e.g. foo, bar, baz
+     * @return a list of elements in csv format without spaces e.g. foo,bar,baz
+     */
+    private String removeSpacesAround(String csv) {
+        if (csv == null) {
+            return null;
+        }
+
+        final StringBuilder result = new StringBuilder();
+        for (final String value : csv.split(",")) {
+            if (!"".equals(value.trim())) {
+                result.append(value.trim());
+                result.append(",");
+            }
+        }
+
+        //remove trailing comma
+        int i = result.lastIndexOf(",");
+        if (i != -1) {
+            result.deleteCharAt(i);
+        }
+
+        return result.toString();
     }
 
     /**
@@ -497,8 +561,8 @@ public class MaintenanceDocumentBase extends DocumentBase implements Maintenance
             }
         }
 
-        // unlock the document when its canceled or disapproved
-        if (workflowDocument.isCanceled() || workflowDocument.isDisapproved() || workflowDocument.isRecalled()) {
+        // unlock the document when its canceled or disapproved or placed inException status
+        if (workflowDocument.isCanceled() || workflowDocument.isDisapproved() || workflowDocument.isRecalled() || workflowDocument.isException()) {
             //Attachment should be deleted from Maintenance Document attachment table
             deleteDocumentAttachment();
             deleteDocumentAttachmentList();
@@ -802,12 +866,11 @@ public class MaintenanceDocumentBase extends DocumentBase implements Maintenance
 
         // Make sure the business object's version number matches that of the database's copy.
         if (newMaintainableObject != null) {
-            if (KRADServiceLocator.getPersistenceStructureService()
-                    .isPersistable(newMaintainableObject.getDataObject().getClass())) {
+            if (newMaintainableObject.isLockable()) {
                 PersistableBusinessObject pbObject = KRADServiceLocator.getBusinessObjectService()
-                        .retrieve((PersistableBusinessObject) newMaintainableObject.getDataObject());
+                        .retrieve(newMaintainableObject.getPersistableBusinessObject());
                 Long pbObjectVerNbr = ObjectUtils.isNull(pbObject) ? null : pbObject.getVersionNumber();
-                Long newObjectVerNbr = ((PersistableBusinessObject) newMaintainableObject.getDataObject()).getVersionNumber();
+                Long newObjectVerNbr = newMaintainableObject.getPersistableBusinessObject().getVersionNumber();
                 if (pbObjectVerNbr != null && !(pbObjectVerNbr.equals(newObjectVerNbr))) {
                     GlobalVariables.getMessageMap()
                             .putError(KRADConstants.GLOBAL_ERRORS, RiceKeyConstants.ERROR_VERSION_MISMATCH);
@@ -967,7 +1030,7 @@ public class MaintenanceDocumentBase extends DocumentBase implements Maintenance
         return this.attachments;
     }
 
-    public void setAttachments(List<MultiDocumentAttachment> attachment) {
+    public void setAttachments(List<MultiDocumentAttachment> attachments) {
         this.attachments = attachments;
     }
 

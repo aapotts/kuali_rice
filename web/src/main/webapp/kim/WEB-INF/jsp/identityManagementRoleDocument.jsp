@@ -1,6 +1,6 @@
 <%--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 --%>
 <%@ include file="/kr/WEB-INF/jsp/tldHeader.jsp"%>
-<script language="javascript" src="scripts/my_common.js"></script>
 
 <c:set var="inquiry" scope="request" value="${KualiForm.inquiry}" />
 <c:set var="readOnly" scope="request" value="${!KualiForm.documentActions[Constants.KUALI_ACTION_CAN_EDIT] || inquiry}" />
 <c:set var="readOnlyAssignees" scope="request" value="${!KualiForm.canAssignRole || readOnly}" />
 <c:set var="canModifyAssignees" scope="request" value="${KualiForm.canModifyAssignees && !readOnlyAssignees}" />
 <c:set var="editingDocument" scope="request" value="${KualiForm.document.editing}" />
+<c:set var="memberSearchValue" scope="request" value="${KualiForm.memberSearchValue}" />
+
 
 <c:set var="formAction" value="identityManagementRoleDocument" />
 <c:if test="${inquiry}">

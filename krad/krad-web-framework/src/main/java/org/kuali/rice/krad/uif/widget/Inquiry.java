@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,7 +188,9 @@ public class Inquiry extends WidgetBase {
             if (KRADServiceLocatorWeb.getDataObjectAuthorizationService()
                     .attributeValueNeedsToBeEncryptedOnFormsAndLinks(inquiryObjectClass, inquiryParameter.getValue())) {
                 try {
-                    parameterValue = CoreApiServiceLocator.getEncryptionService().encrypt(parameterValue);
+                    if(CoreApiServiceLocator.getEncryptionService().isEnabled()) {
+                        parameterValue = CoreApiServiceLocator.getEncryptionService().encrypt(parameterValue);
+                    }
                 } catch (GeneralSecurityException e) {
                     LOG.error("Exception while trying to encrypted value for inquiry framework.", e);
                     throw new RuntimeException(e);

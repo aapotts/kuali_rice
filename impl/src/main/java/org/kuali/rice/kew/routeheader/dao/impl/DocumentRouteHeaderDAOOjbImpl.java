@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,13 +204,13 @@ public class DocumentRouteHeaderDAOOjbImpl extends PersistenceBrokerDaoSupport i
         try {
             broker = getPersistenceBroker(false);
             conn = broker.serviceConnectionManager().getConnection();
-            String respIds = "(";
+            String respIds = "('";
             int index = 0;
             for (String responsibilityId : responsibilityIds) {
-                respIds += responsibilityId + (index == responsibilityIds.size()-1 ? "" : ",");
+                respIds += responsibilityId + (index == responsibilityIds.size()-1 ? "" : "','");
                 index++;
             }
-            respIds += ")";
+            respIds += "')";
             String query = "SELECT DISTINCT(doc_hdr_id) FROM KREW_ACTN_RQST_T "+
             	"WHERE (STAT_CD='" +
             	ActionRequestStatus.INITIALIZED.getCode()+
@@ -354,7 +354,21 @@ public class DocumentRouteHeaderDAOOjbImpl extends PersistenceBrokerDaoSupport i
  	 	}
  	 	return appDocId;
  	 }
-    
+
+    public String getAppDocStatus(String documentId) {
+        Criteria crit = new Criteria();
+        crit.addEqualTo("documentId", documentId);
+        ReportQueryByCriteria query = QueryFactory.newReportQuery(DocumentRouteHeaderValue.class, crit);
+        query.setAttributes(new String[] { "appDocStatus" });
+        String appDocStatus = null;
+        Iterator iter = getPersistenceBrokerTemplate().getReportQueryIteratorByQuery(query);
+        while (iter.hasNext()) {
+            Object[] row = (Object[]) iter.next();
+            appDocStatus = (String)row[0];
+        }
+        return appDocStatus;
+    }
+
     public void save(SearchableAttributeValue searchableAttributeValue) {
     	getPersistenceBrokerTemplate().store(searchableAttributeValue);
     }

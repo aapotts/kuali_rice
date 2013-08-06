@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.kuali.rice.kew.api.doctype.DocumentType;
 import org.kuali.rice.kew.api.doctype.DocumentTypeService;
 import org.kuali.rice.kew.api.doctype.ProcessDefinition;
 import org.kuali.rice.kew.api.doctype.RoutePath;
+import org.kuali.rice.kew.api.document.node.RouteNodeInstance;
 import org.kuali.rice.kew.doctype.dao.DocumentTypeDAO;
 import org.kuali.rice.kew.engine.node.ProcessDefinitionBo;
 import org.kuali.rice.kew.engine.node.RouteNode;
@@ -130,6 +131,75 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
         }
         return isSuperUser;
 
+    }
+
+    @Override
+    public boolean canSuperUserApproveSingleActionRequest( String principalId, String documentTypeName, List<RouteNodeInstance> routeNodeInstances, String routeStatusCode ) {
+
+        checkSuperUserInput( principalId, documentTypeName );
+
+        org.kuali.rice.kew.doctype.bo.DocumentType documentType = KEWServiceLocator.getDocumentTypeService().findByName(documentTypeName);
+        List<org.kuali.rice.kew.engine.node.RouteNodeInstance> currentNodeInstances = null;
+        if (routeNodeInstances != null && !routeNodeInstances.isEmpty()) {
+            currentNodeInstances = KEWServiceLocator.getRouteNodeService().getCurrentNodeInstances(routeNodeInstances.get(0).getDocumentId());
+        }
+
+        boolean isSuperUser = KEWServiceLocator.getDocumentTypePermissionService().canSuperUserApproveSingleActionRequest( principalId, documentType,
+                currentNodeInstances, routeStatusCode);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Super user approve single action request status is " + isSuperUser + ".");
+        }
+        return isSuperUser;
+    }
+
+    @Override
+    public boolean canSuperUserApproveDocument( String principalId, String documentTypeName, List<RouteNodeInstance> routeNodeInstances, String routeStatusCode ) {
+        checkSuperUserInput( principalId, documentTypeName );
+
+        org.kuali.rice.kew.doctype.bo.DocumentType documentType = KEWServiceLocator.getDocumentTypeService().findByName(documentTypeName);
+        List<org.kuali.rice.kew.engine.node.RouteNodeInstance> currentNodeInstances = null;
+        if (routeNodeInstances != null && !routeNodeInstances.isEmpty()) {
+            currentNodeInstances = KEWServiceLocator.getRouteNodeService().getCurrentNodeInstances(routeNodeInstances.get(0).getDocumentId());
+        }
+
+        boolean isSuperUser = KEWServiceLocator.getDocumentTypePermissionService().canSuperUserApproveDocument(
+                principalId, documentType, currentNodeInstances, routeStatusCode);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Super user approve document status is " + isSuperUser + ".");
+        }
+        return isSuperUser;
+    }
+
+    @Override
+    public boolean canSuperUserDisapproveDocument( String principalId, String documentTypeName, List<RouteNodeInstance> routeNodeInstances, String routeStatusCode ) {
+        checkSuperUserInput( principalId, documentTypeName );
+
+        org.kuali.rice.kew.doctype.bo.DocumentType documentType = KEWServiceLocator.getDocumentTypeService().findByName(documentTypeName);
+
+        List<org.kuali.rice.kew.engine.node.RouteNodeInstance> currentNodeInstances = null;
+        if (routeNodeInstances != null && !routeNodeInstances.isEmpty()) {
+            currentNodeInstances = KEWServiceLocator.getRouteNodeService().getCurrentNodeInstances(routeNodeInstances.get(0).getDocumentId());
+        }
+
+        boolean isSuperUser = KEWServiceLocator.getDocumentTypePermissionService().canSuperUserDisapproveDocument( principalId, documentType,
+                currentNodeInstances, routeStatusCode);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Super user disapprove document status is " + isSuperUser + ".");
+        }
+        return isSuperUser;
+    }
+
+    private void checkSuperUserInput( String principalId, String documentTypeName ) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Determining super user status [principalId=" + principalId + ", documentTypeName="
+                    + documentTypeName + "]");
+        }
+        if (StringUtils.isBlank(principalId)) {
+            throw new RiceIllegalArgumentException("principalId was null or blank");
+        }
+        if (StringUtils.isBlank(documentTypeName)) {
+            throw new RiceIllegalArgumentException("documentTypeId was null or blank");
+        }
     }
 
     @Override

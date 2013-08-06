@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class AgendaInquiryController  extends InquiryController {
         AgendaEditor agendaEditor = getAgendaEditor(form);
         if (agendaItem == null) {
             RuleBo rule = new RuleBo();
-            rule.setId(getSequenceAccessorService().getNextAvailableSequenceNumber("KRMS_RULE_S")
+            rule.setId(getSequenceAccessorService().getNextAvailableSequenceNumber("KRMS_RULE_S", RuleBo.class)
                     .toString());
             if (StringUtils.isBlank(agendaEditor.getAgenda().getContextId())) {
                 rule.setNamespace("");

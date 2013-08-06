@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,8 +78,25 @@ public interface UiDocumentService {
 	 * @param identityManagementRoleDocument
 	 */
 	public void loadRoleDoc(IdentityManagementRoleDocument identityManagementRoleDocument, Role kimRole);
-	
-	/**
+
+    /**
+     *
+     * This method loads a role document members based on search criteria
+     *
+     * @param identityManagementRoleDocument
+     */
+    public void loadRoleMembersBasedOnSearch(IdentityManagementRoleDocument identityManagementRoleDocument,
+                                             String memberSearchValue);
+
+    /**
+     *
+     * This method loads a document's original role members
+     *
+     * @param identityManagementRoleDocument
+     */
+    public void clearRestrictedRoleMembersSearchResults(IdentityManagementRoleDocument identityManagementRoleDocument);
+
+    /**
 	 * 
 	 * This method ...
 	 * 
@@ -125,8 +142,10 @@ public interface UiDocumentService {
 	public String getMemberIdByName(MemberType memberType, String memberNamespaceCode, String memberName);
 
 	public void setDelegationMembersInDocument(IdentityManagementRoleDocument identityManagementRoleDocument);
-	
-	public RoleMemberBo getRoleMember(String roleMemberId);
+
+    public void setMembersInDocument(IdentityManagementRoleDocument identityManagementRoleDocument);
+
+    public RoleMemberBo getRoleMember(String roleMemberId);
 	
 	public List<KimDocumentRoleMember> getRoleMembers(Map<String,String> fieldValues);
 	

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.kuali.rice.kew.api.extension.ExtensionDefinition;
 import org.kuali.rice.kew.api.extension.ExtensionUtils;
 import org.kuali.rice.kew.api.util.CodeTranslator;
 import org.kuali.rice.kew.doctype.ApplicationDocumentStatus;
+import org.kuali.rice.kew.doctype.ApplicationDocumentStatusCategory;
 import org.kuali.rice.kew.doctype.DocumentTypeAttributeBo;
 import org.kuali.rice.kew.doctype.DocumentTypePolicy;
 import org.kuali.rice.kew.doctype.DocumentTypeSecurity;
@@ -161,6 +162,12 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
     @Column(name = "APPL_ID")
     private String actualApplicationId;
 
+    /**
+     * @since 2.1.3
+     */
+    @Column(name = "AUTHORIZER")
+    private String authorizer;
+
 
     /* these two fields are for the web tier lookupable
      * DocumentType is doing double-duty as a web/business tier object
@@ -190,6 +197,9 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "documentType")
     @Fetch(value = FetchMode.SELECT)
     private List<ApplicationDocumentStatus> validApplicationStatuses;
+
+    // TODO: map this for JPA
+    private List<ApplicationDocumentStatusCategory> applicationStatusCategories;
 
     @Transient
     private List routeLevels;
@@ -342,6 +352,26 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
      */
     public DocumentTypePolicy getRecallNotification() {
         return getPolicyByName(RECALL_NOTIFICATION.getCode(), (String) null);
+    }
+
+    /**
+     * Returns the SUPPRESS_IMMEDIATE_EMAILS_ON_SU_ACTION policy on the document if defined, or
+     * the default value for this policy which is false.
+     * @return the SUPPRESS_IMMEDIATE_EMAILS_ON_SU_ACTION document type policy
+     * @since 2.1.3
+     */
+    public DocumentTypePolicy getSuppressImmediateEmailsOnSuActionPolicy() {
+        return getPolicyByName(SUPPRESS_IMMEDIATE_EMAILS_ON_SU_ACTION.getCode(), Boolean.FALSE);
+    }
+
+    /**
+     * Returns the ALLOW_SU_FINAL_APPROVAL policy on the document if defined, or
+     * the default value for this policy which is true.
+     * @return the ALLOW_SU_FINAL_APPROVAL document type policy
+     * @since 2.1.3
+     */
+    public DocumentTypePolicy getAllowSuperUserFinalApprovalPolicy() {
+        return getPolicyByName(ALLOW_SU_FINAL_APPROVAL.getCode(), Boolean.TRUE);
     }
 
     /**
@@ -595,13 +625,39 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
         return policies;
     }
 
-    public List<ApplicationDocumentStatus> getValidApplicationStatuses() {
+    public List<ApplicationDocumentStatus> getValidApplicationStatuses()  {
+        if((ObjectUtils.isNull(this.validApplicationStatuses) || this.validApplicationStatuses.isEmpty())
+                && ObjectUtils.isNotNull(getParentDocType()) && isAppDocStatusInUse()) {
+            return getParentDocType().getValidApplicationStatuses();
+       }
         return this.validApplicationStatuses;
     }
 
     public void setValidApplicationStatuses(
             List<ApplicationDocumentStatus> validApplicationStatuses) {
         this.validApplicationStatuses = validApplicationStatuses;
+    }
+
+    /**
+     * Get the application document status categories for this document type
+     *
+     * @see ApplicationDocumentStatusCategory
+     * @return the application document status categories for this document type
+     */
+    public List<ApplicationDocumentStatusCategory> getApplicationStatusCategories() {
+        if((ObjectUtils.isNull(this.validApplicationStatuses) || this.validApplicationStatuses.isEmpty())
+                && ObjectUtils.isNotNull(getParentDocType()) && isAppDocStatusInUse()) {
+            return getParentDocType().getApplicationStatusCategories();
+        }
+        return applicationStatusCategories;
+    }
+
+    /**
+     * Set the application document status categories for this document type
+     * @param applicationStatusCategories
+     */
+    public void setApplicationStatusCategories(List<ApplicationDocumentStatusCategory> applicationStatusCategories) {
+        this.applicationStatusCategories = applicationStatusCategories;
     }
 
     public String getDocumentTypeSecurityXml() {
@@ -991,7 +1047,16 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
         this.returnUrl = returnUrl;
     }
 
-    private DocumentTypePolicy getPolicyByName(String policyName, Boolean defaultValue) {
+    /**
+     * Returns the policy value of the specified policy, consulting parent document type definitions
+     * if not defined on the immediate DocumentType.  If not found, a policy with the specified default
+     * value is returned.  If policy is found on parent but boolean value is undefined, TRUE is used.
+     * @param policyName the policy name to look up
+     * @param defaultValue the default boolean value to return if policy is not found
+     * @return DocumenTypePolicy defined on immediate or parent document types, or new instance initialized with
+     *         specified default boolean value
+     */
+    public DocumentTypePolicy getPolicyByName(String policyName, Boolean defaultValue) {
 
         Iterator policyIter = getDocumentTypePolicies().iterator();
         while (policyIter.hasNext()) {
@@ -1017,7 +1082,17 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
         return policy;
     }
 
-    private DocumentTypePolicy getPolicyByName(String policyName, String defaultValue) {
+    /**
+     * Returns the policy value of the specified policy, consulting parent document type definitions
+     * if not defined on the immediate DocumentType.  If not found, a policy with a boolean value of True
+     * and a string value of the specified default value is returned.
+     * If policy is found on parent but boolean value is undefined, TRUE is used.
+     * @param policyName the policy name to look up
+     * @param defaultValue the default string value to return if policy is not found
+     * @return DocumenTypePolicy defined on immediate or parent document types, or new instance initialized with
+     *         specified default string value
+     */
+    public DocumentTypePolicy getPolicyByName(String policyName, String defaultValue) {
 
         Iterator policyIter = getDocumentTypePolicies().iterator();
         while (policyIter.hasNext()) {
@@ -1667,6 +1742,23 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
         return workgroupId;
     }
 
+    @Override
+    public String getAuthorizer() {
+        String result = authorizer;
+
+        if (StringUtils.isBlank(result)) {
+            if (getParentDocType() != null) {
+                return getParentDocType().getAuthorizer();
+            }
+        }
+
+        return result;
+    }
+
+    public void setAuthorizer(String authorizer) {
+        this.authorizer = authorizer;
+    }
+
     public static org.kuali.rice.kew.api.doctype.DocumentType to(DocumentType documentTypeBo) {
         if (documentTypeBo == null) {
             return null;
@@ -1677,6 +1769,8 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
     }
 
     public static DocumentType from(org.kuali.rice.kew.api.doctype.DocumentTypeContract dt) {
+        if (dt == null) return null;
+
         // DocumentType BO and DTO are not symmetric
         // set what fields we can
         DocumentType ebo = new DocumentType();
@@ -1704,7 +1798,7 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
                 // NOTE: The policy value is actually a boolean field stored to a Decimal(1) column (although the db column is named PLCY_NM)
                 // I'm not sure what the string value should be but the BO is simply toString'ing the Boolean value
                 // so I am assuming here that "true"/"false" are the acceptable values
-                policies.add(new DocumentTypePolicy(entry.getKey().getCode(), "true".equals(entry.getValue())));
+                policies.add(new DocumentTypePolicy(entry.getKey().getCode(), Boolean.TRUE.toString().equals(entry.getValue())));
             }
         }
         if (CollectionUtils.isNotEmpty(dt.getDocumentTypeAttributes())) {
@@ -1715,6 +1809,7 @@ public class DocumentType extends PersistableBusinessObjectBase implements Mutab
             
         }
         ebo.setDocumentTypePolicies(policies);
+        ebo.setAuthorizer(dt.getAuthorizer());
         return ebo;
     }
 }

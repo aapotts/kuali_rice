@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,6 +115,8 @@ public class RouteNodeInstance implements Serializable {
 	@Column(name="VER_NBR")
 	private Integer lockVerNbr;
     
+    private List<DocumentRouteHeaderValue> initialDocumentRouteHeaderValues = new ArrayList<DocumentRouteHeaderValue>();
+
     public boolean isActive() {
         return active;
     }
@@ -273,6 +275,14 @@ public class RouteNodeInstance implements Serializable {
         this.state.addAll(state);
      }
 
+    public List<DocumentRouteHeaderValue> getInitialDocumentRouteHeaderValues() {
+        return initialDocumentRouteHeaderValues;
+    }
+
+    public void setInitialDocumentRouteHeaderValues(List<DocumentRouteHeaderValue> initialDocumentRouteHeaderValues) {
+        this.initialDocumentRouteHeaderValues = initialDocumentRouteHeaderValues;
+    }
+    
     public String toString() {
         return new ToStringBuilder(this)
             .append("routeNodeInstanceId", routeNodeInstanceId)
@@ -323,8 +333,13 @@ public class RouteNodeInstance implements Serializable {
         List<org.kuali.rice.kew.api.document.node.RouteNodeInstance.Builder> nextNodes = new ArrayList<org.kuali.rice.kew.api.document.node.RouteNodeInstance.Builder>();
         if (routeNodeInstance.getNextNodeInstances() != null) {
             for (RouteNodeInstance next : routeNodeInstance.getNextNodeInstances()) {
-                // will this make things blow up?
-                nextNodes.add(org.kuali.rice.kew.api.document.node.RouteNodeInstance.Builder.create(RouteNodeInstance.to(next)));
+                // KULRICE-8152 - During load testing, sometimes routeNodeInstance.getNextNodeInstances() returns an
+                // arraylist with size = 1 but all elements are null, which causes a "contract was null" error when the
+                // create is called.  This check to see if next is not null prevents the error from occurring.
+                if (next != null) {
+                    // will this make things blow up?
+                    nextNodes.add(org.kuali.rice.kew.api.document.node.RouteNodeInstance.Builder.create(RouteNodeInstance.to(next)));
+                }
             }
         }
         builder.setNextNodeInstances(nextNodes);

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,11 +60,16 @@ import org.kuali.rice.kns.datadictionary.KNSDocumentEntry;
 import org.kuali.rice.kns.datadictionary.MaintenanceDocumentEntry;
 import org.kuali.rice.kns.document.authorization.DocumentAuthorizer;
 import org.kuali.rice.kns.service.KNSServiceLocator;
+import org.kuali.rice.kns.web.struts.action.KualiAction;
 import org.kuali.rice.kns.web.struts.action.KualiMultipartRequestHandler;
+import org.kuali.rice.kns.web.struts.form.InquiryForm;
 import org.kuali.rice.kns.web.struts.form.KualiDocumentFormBase;
 import org.kuali.rice.kns.web.struts.form.KualiForm;
 import org.kuali.rice.kns.web.struts.form.KualiMaintenanceForm;
 import org.kuali.rice.kns.web.struts.form.pojo.PojoFormBase;
+import org.kuali.rice.kns.web.ui.Field;
+import org.kuali.rice.kns.web.ui.Row;
+import org.kuali.rice.kns.web.ui.Section;
 import org.kuali.rice.krad.datadictionary.AttributeDefinition;
 import org.kuali.rice.krad.datadictionary.AttributeSecurity;
 import org.kuali.rice.krad.datadictionary.DataDictionary;
@@ -89,6 +95,11 @@ public class WebUtils {
 
 	private static final String APPLICATION_IMAGE_URL_PROPERTY_PREFIX = "application.custom.image.url";
 	private static final String DEFAULT_IMAGE_URL_PROPERTY_NAME = "kr.externalizable.images.url";
+
+    /**
+     * Prefixes indicating an absolute url
+     */
+    private static final String[] SCHEMES = { "http://", "https://" };
 
 	/**
 	 * A request attribute name that indicates that a
@@ -300,10 +311,19 @@ public class WebUtils {
 	public static void saveMimeOutputStreamAsFile(HttpServletResponse response, String contentType,
 			ByteArrayOutputStream byteArrayOutputStream, String fileName) throws IOException {
 
+        // If there are quotes in the name, we should replace them to avoid issues.
+        // The filename will be wrapped with quotes below when it is set in the header
+        String updateFileName;
+        if(fileName.contains("\"")) {
+            updateFileName = fileName.replaceAll("\"", "");
+        } else {
+            updateFileName =  fileName;
+        }
+
 		// set response
 		response.setContentType(contentType);
-		response.setHeader("Content-disposition", "attachment; filename=" + fileName);
-		response.setHeader("Expires", "0");
+        response.setHeader("Content-disposition", "attachment; filename=\"" + updateFileName + "\"");
+        response.setHeader("Expires", "0");
 		response.setHeader("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
 		response.setHeader("Pragma", "public");
 		response.setContentLength(byteArrayOutputStream.size());
@@ -327,10 +347,19 @@ public class WebUtils {
 	public static void saveMimeInputStreamAsFile(HttpServletResponse response, String contentType,
 			InputStream inStream, String fileName, int fileSize) throws IOException {
 
+        // If there are quotes in the name, we should replace them to avoid issues.
+        // The filename will be wrapped with quotes below when it is set in the header
+        String updateFileName;
+        if(fileName.contains("\"")) {
+            updateFileName = fileName.replaceAll("\"", "");
+        } else {
+            updateFileName =  fileName;
+        }
+
 		// set response
 		response.setContentType(contentType);
-		response.setHeader("Content-disposition", "attachment; filename=" + fileName);
-		response.setHeader("Expires", "0");
+        response.setHeader("Content-disposition", "attachment; filename=\"" + updateFileName + "\"");
+        response.setHeader("Expires", "0");
 		response.setHeader("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
 		response.setHeader("Pragma", "public");
 		response.setContentLength(fileSize);
@@ -357,6 +386,28 @@ public class WebUtils {
 	public static void incrementTabIndex(KualiForm form, String tabKey) {
 		form.incrementTabIndex();
 	}
+
+    /**
+     * Attempts to reopen sub tabs which would have been closed for inactive records
+     *
+     * @param sections the list of Sections whose rows and fields to set the open tab state on
+     * @param tabStates the map of tabKey->tabState.  This map will be modified to set entries to "OPEN"
+     * @param collectionName the name of the collection reopening
+     */
+    public static void reopenInactiveRecords(List<Section> sections, Map<String, String> tabStates, String collectionName) {
+        for (Section section : sections) {
+            for (Row row: section.getRows()) {
+                for (Field field : row.getFields()) {
+                    if (field != null) {
+                        if (Field.CONTAINER.equals(field.getFieldType()) && StringUtils.startsWith(field.getContainerName(), collectionName)) {
+                            final String tabKey = WebUtils.generateTabKey(FieldUtils.generateCollectionSubTabName(field));
+                            tabStates.put(tabKey, KualiForm.TabState.OPEN.name());
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 	/**
 	 * Generates a String from the title that can be used as a Map key.
@@ -725,12 +776,18 @@ public class WebUtils {
 		String outputString = StringEscapeUtils.escapeHtml(inputString);
 		// string has been escaped of all <, >, and & (and other characters)
 
-		Map<String, String> findAndReplacePatterns = new HashMap<String, String>();
+        Map<String, String> findAndReplacePatterns = new LinkedHashMap<String, String>();
 
-		// now replace our rice custom markup into html
+        // now replace our rice custom markup into html
 
-		// DON'T ALLOW THE SCRIPT TAG OR ARBITRARY IMAGES/URLS/ETC. THROUGH
+        // DON'T ALLOW THE SCRIPT TAG OR ARBITRARY IMAGES/URLS/ETC. THROUGH
 
+        //strip out instances where javascript precedes a URL
+        findAndReplacePatterns.put("\\[a ((javascript|JAVASCRIPT|JavaScript).+)\\]", "");
+        //turn passed a href value into appropriate tag
+        findAndReplacePatterns.put("\\[a (.+)\\]", "<a href=\"$1\">");
+        findAndReplacePatterns.put("\\[/a\\]", "</a>");
+        
 		// filter any one character tags
 		findAndReplacePatterns.put("\\[([A-Za-z])\\]", "<$1>");
 		findAndReplacePatterns.put("\\[/([A-Za-z])\\]", "</$1>");
@@ -832,7 +889,12 @@ public class WebUtils {
     	if(StringUtils.isBlank(principalId)) {
     		throw new IllegalArgumentException("Principal ID must have a value");
     	}
-    	return KimApiServiceLocator.getIdentityService().getDefaultNamesForPrincipalId(principalId).getDefaultName().getCompositeName();
+        if (KimApiServiceLocator.getIdentityService().getDefaultNamesForPrincipalId(principalId) == null){
+            return "";
+        }
+        else {
+    	    return KimApiServiceLocator.getIdentityService().getDefaultNamesForPrincipalId(principalId).getDefaultName().getCompositeName();
+        }
     }
 
     /**
@@ -864,6 +926,31 @@ public class WebUtils {
         }
 
         return result;
+    }
+
+    /**
+     * Returns an absolute URL which is a combination of a base part plus path,
+     * or in the case that the path is already an absolute URL, the path alone
+     * @param base the url base path
+     * @param path the path to append to base
+     * @return an absolute URL representing the combination of base+path, or path alone if it is already absolute
+     */
+    public static String toAbsoluteURL(String base, String path) {
+        boolean abs = false;
+        if (StringUtils.isBlank(path)) {
+            path = "";
+        } else {
+            for (String scheme: SCHEMES) {
+                if (path.startsWith(scheme)) {
+                    abs = true;
+                    break;
+                }
+            }
+        }
+        if (abs) {
+            return path;
+        }
+        return base + path;
     }
 
 }

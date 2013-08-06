@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,32 @@ public interface WorkflowRuleAttributeMediator {
      * the calling code.
      */
     WorkflowRuleAttributeRows getRuleRows(Map<String, String> parameters, RuleTemplateAttributeBo ruleTemplateAttribute);
+
+    /**
+     * Returns rule attribute row configuration for the workflow rule attribute defined on the given RuleTemplateAttribute.
+     * These are the rows which show up on the Routing Report screen when using a RuleTemplate which includes the 
+     * given RuleTemplateAttribute.
+     *
+     * <p>Will use the supplied parameters to populate the WorkflowRuleAttribute by running the validateRoutingData method
+     * on that attribute.  The result of this call contains any validation errors, the Row objects as constructed by the
+     * attribute, and the final values for the rule extensions after validation and processing has been executed.</p>
+     *
+     * @param parameters a map of parameters to pass to the backend WorkflowRuleAttribute for validation, may be null or
+     *                   an empty map
+     * @param ruleTemplateAttribute the RuleTemplateAttribute which defines the ExtensionDefinition for the
+     *                              WorkflowRuleAttribute against which to validate and retrieve the search rows, as
+     *                              well as the required flag which should be passed to the attribute
+     *
+     * @return the result of validating and retrieving rule search rows, will never return null
+     */
+    WorkflowRuleAttributeRows getRoutingDataRows(Map<String, String> parameters, RuleTemplateAttribute ruleTemplateAttribute);
+
+    /**
+     * Equivalent to {@link #getRoutingDataRows(java.util.Map, org.kuali.rice.kew.rule.bo.RuleTemplateAttributeBo)} but takes
+     * a {@link RuleTemplateAttributeBo} instead of a {@link RuleTemplateAttribute}. Exists primarily for convenience of
+     * the calling code.
+     */
+    WorkflowRuleAttributeRows getRoutingDataRows(Map<String, String> parameters, RuleTemplateAttributeBo ruleTemplateAttribute);
 
     /**
      * Returns rule search row configuration for the workflow rule attribute defined on the given RuleTemplateAttribute.

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,19 @@ public class DictionaryValidationServiceImpl extends org.kuali.rice.krad.service
         // call method to recursively find business objects and validate
         validateBusinessObjectsFromDescriptors(document, PropertyUtils.getPropertyDescriptors(document.getClass()),
                 depth);
+    }
+
+    /**
+     * @see org.kuali.rice.kns.service.DictionaryValidationService#validateDocument(org.kuali.rice.krad.document.Document)
+     * @param document - document to validate
+     * @deprecated since 2.1.2
+     */
+    @Deprecated
+    @Override
+    public void validateDocument(Document document) {
+        String documentEntryName = document.getDocumentHeader().getWorkflowDocument().getDocumentTypeName();
+
+        validatePrimitivesFromDescriptors(documentEntryName, document, PropertyUtils.getPropertyDescriptors(document.getClass()), "", true);
     }
 
     @Override

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,8 +67,12 @@ public class AttributesMapBuilder {
         attributeMap.set("forceUppercase", attribute.getForceUppercase().toString());
         attributeMap.set("label", attribute.getLabel());
         attributeMap.set("shortLabel", attribute.getShortLabel());
-       
-        attributeMap.set("maxLength", attribute.getMaxLength().toString());
+
+        //KULRICE-9144 remove maxLength non null assumption
+        Integer maxLength = attribute.getMaxLength();
+        if (maxLength != null) {
+            attributeMap.set("maxLength", maxLength.toString());
+        }
         String exclusiveMin = attribute.getExclusiveMin();
         if (exclusiveMin != null) {
             attributeMap.set("exclusiveMin", exclusiveMin/*.toString()*/);

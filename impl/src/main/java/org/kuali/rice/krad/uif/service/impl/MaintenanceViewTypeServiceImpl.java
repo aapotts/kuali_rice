@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.kuali.rice.krad.uif.UifConstants.ViewType;
 import org.kuali.rice.krad.uif.UifParameters;
 import org.kuali.rice.krad.uif.util.ViewModelUtils;
 import org.kuali.rice.krad.uif.service.ViewTypeService;
+import org.kuali.rice.krad.util.KRADConstants;
 import org.kuali.rice.krad.util.KRADPropertyConstants;
 import org.springframework.beans.PropertyValues;
 
@@ -96,6 +97,11 @@ public class MaintenanceViewTypeServiceImpl implements ViewTypeService {
 			try {
 				// determine object class based on the document type
 				Document document = documentService.getByDocumentHeaderId(documentNumber);
+                if (!documentService.documentExists(documentNumber)) {
+                    parameters = new HashMap<String,String>();
+                    parameters.put(UifParameters.VIEW_ID, KRADConstants.KRAD_INITIATED_DOCUMENT_VIEW_NAME);
+                    return parameters;
+                }
 				if (document != null) {
 					String docTypeName = document.getDocumentHeader().getWorkflowDocument().getDocumentTypeName();
 					Class<?> objectClassName = getDocumentDictionaryService().getMaintenanceDataObjectClass(docTypeName);

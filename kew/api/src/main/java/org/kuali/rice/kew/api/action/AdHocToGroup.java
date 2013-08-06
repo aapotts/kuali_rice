@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,8 +85,8 @@ public final class AdHocToGroup extends AdHocCommand {
      * Defines some internal constants used on this class.
      */
     static class Constants {
-        final static String ROOT_ELEMENT_NAME = "adHocToGroup";
-        final static String TYPE_NAME = "AdHocToGroupType";
+        final static String ROOT_ELEMENT_NAME = "adHocGroup_v2_1_3";
+        final static String TYPE_NAME = "AdHocToGroupType_v2_1_3";
     }
     
     /**

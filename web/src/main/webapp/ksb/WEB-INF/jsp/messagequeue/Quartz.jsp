@@ -1,6 +1,6 @@
 <%--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -71,8 +71,16 @@
 		    <display:column style="text-align:center;vertical-align:middle;" class="datacell" sortable="true" title="<div style='text-align:center;vertical-align:top;'>FullName</div>" >
 		    	<c:out value="${result.jobDetail.fullName}"/>&nbsp;
 		    </display:column>
-		    <display:column style="text-align:center;vertical-align:middle;" class="datacell" sortable="false" title="<div style='text-align:center;vertical-align:top;'>Actions</div>" >
-		    	<a href='Quartz.do?methodToCall=moveToRouteQueue&jobName=<c:out value="${result.jobDetail.name}" />&jobGroup=<c:out value="${result.jobDetail.group}"/>'>Put in message queue</a>
+        <display:column style="text-align:center;vertical-align:middle;" class="datacell" sortable="false" title="<div style='text-align:center;vertical-align:top;'>Actions</div>" >
+         <c:choose>
+           <c:when test="${not empty result.jobDetail.jobDataMap[MessageServiceExecutorJob.MESSAGE_KEY]}">
+            <a href='Quartz.do?methodToCall=moveToRouteQueue&jobName=<c:out value="${result.jobDetail.name}" />&jobGroup=<c:out value="${result.jobDetail.group}"/>'>Put in message queue</a>
+           </c:when>
+           <c:otherwise>
+           No messages available
+           </c:otherwise>
+
+         </c:choose>
 		    </display:column>
 		  </display:table>
 	</td>

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,6 +146,7 @@ public final class KewApiConstants {
     public static final String NOTIFY_COMPLETED_ON_RETURN_POLICY = DocumentTypePolicy.NOTIFY_COMPLETED_ON_RETURN.getCode();
     public static final String RECALL_NOTIFICATION_POLICY = DocumentTypePolicy.RECALL_NOTIFICATION.getCode();
     public static final String SEND_NOTIFICATION_ON_SU_DISAPPROVE_POLICY = DocumentTypePolicy.SEND_NOTIFICATION_ON_SU_DISAPPROVE.getCode();
+    public static final String SUPPRESS_IMMEDIATE_EMAILS_ON_SU_ACTION_POLICY = DocumentTypePolicy.SUPPRESS_IMMEDIATE_EMAILS_ON_SU_ACTION.getCode();
 
     public static final String DOCUMENT_TYPE_BLANKET_APPROVE_POLICY_NONE = "none";
     public static final String DOCUMENT_TYPE_BLANKET_APPROVE_POLICY_ANY = "any";
@@ -793,6 +794,8 @@ public final class KewApiConstants {
 
 	public static final int DEFAULT_TRANSACTION_TIMEOUT_SECONDS = 3600;
 
+    public static final int DELEGATE_RULE_LOOKUP_MAX_ROWS_RETURNED = 500;
+
     public static final String HTML_NON_BREAKING_SPACE = "&nbsp;";
 
     public static final String DAILY_EMAIL_CRON_EXPRESSION = "dailyEmail.cronExpression";
@@ -881,12 +884,17 @@ public final class KewApiConstants {
 	public static final String DOCUMENT_STATUS_DETAIL = "routeStatusCode";
     public static final String APP_DOC_STATUS_DETAIL = "appDocStatus";
 
+
 	// Permissions
 
 	public static final String BLANKET_APPROVE_PERMISSION = "Blanket Approve Document";
 	public static final String AD_HOC_REVIEW_PERMISSION = "Ad Hoc Review Document";
 	public static final String ADMINISTER_ROUTING_PERMISSION = "Administer Routing for Document";
-	public static final String CANCEL_PERMISSION = "Cancel Document";
+    public static final String SUPER_USER_APPROVE_SINGLE_ACTION_REQUEST = "Super User Approve Single Action Request";
+    public static final String SUPER_USER_APPROVE_DOCUMENT = "Super User Approve Document";
+    public static final String SUPER_USER_DISAPPROVE_DOCUMENT = "Super User Disapprove Document";
+
+    public static final String CANCEL_PERMISSION = "Cancel Document";
     public static final String RECALL_PERMISSION = "Recall Document";
 	public static final String INITIATE_PERMISSION = "Initiate Document";
 	public static final String ROUTE_PERMISSION = "Route Document";

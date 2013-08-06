@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 <!-- The prose copy in the structures REC is the normative -->
 <!-- version (which shouldn't differ from this one except for -->
 <!-- this comment and entity expansions, but just in case -->
-<!DOCTYPE xs:schema PUBLIC "-//W3C//DTD XMLSCHEMA 200102//EN" "resource:XMLSchema.dtd" [
+<!DOCTYPE xs:schema PUBLIC "-//W3C//DTD XMLSCHEMA 200102//EN" "XMLSchema.dtd" [
 
 <!-- provide ID type information even for parsers which only read the
      internal subset -->

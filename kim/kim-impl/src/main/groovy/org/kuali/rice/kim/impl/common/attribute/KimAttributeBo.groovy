@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@ import org.kuali.rice.kim.api.common.attribute.KimAttribute
 import org.kuali.rice.kim.api.common.attribute.KimAttributeContract
 import org.kuali.rice.krad.bo.PersistableBusinessObjectBase
 
+/**
+ * The column names have been used in a native query in RoleDaoOjb and will need to be modified if any changes to the
+ * column names are made here.
+ */
 class KimAttributeBo extends PersistableBusinessObjectBase implements KimAttributeContract {
     private static final long serialVersionUID = 1L;
 

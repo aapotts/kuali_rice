@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,8 +133,9 @@ public final class KimConstants {
     	public static final String LOOK_UP_RECORDS = "Look Up Records";
     	public static final String INQUIRE_INTO_RECORDS = "Inquire Into Records";
     	public static final String USE_SCREEN = "Use Screen";
+        public static final String BACKDOOR_RESTRICTION = "Backdoor Restriction";
 
-    	public static final String PERFORM_CUSTOM_MAINTENANCE_DOCUMENT_FUNCTION ="Perform Custom Maintenance Document Function";
+        public static final String PERFORM_CUSTOM_MAINTENANCE_DOCUMENT_FUNCTION ="Perform Custom Maintenance Document Function";
     	public static final String MAINTAIN_SYSTEM_PARAMETER = "Maintain System Parameter";
     	public static final String SEND_AD_HOC_REQUEST ="Send Ad Hoc Request";
 
@@ -200,8 +201,13 @@ public final class KimConstants {
 		public static final String KIM_REVIEW_RESPONSIBILITY_DOCUMENT_TYPE_NAME = "IdentityManagementReviewResponsibilityMaintenanceDocument";
 		public static final String KIM_ROLE_DOCUMENT_SHORT_KEY = "IMRD";
 		public static final String KIM_GROUP_DOCUMENT_SHORT_KEY = "IMGD";
-		public static final String KIM_PERSON_DOCUMENT_SHORT_KEY = "IMPD";
-		public static final String KIM_ROLE_DOCUMENT_ACTION = "identityManagementRoleDocument.do";
+        public static final String KIM_PERSON_DOCUMENT_SHORT_KEY = "IMPD";
+        public static final String KIM_GROUP_INQUIRY_SORT_DESC_VALUE = "KIM_GROUP_INQUIRY_SORT_DESC_VALUE";
+        public static final String KIM_GROUP_INQUIRY_SORT_PREV_COL_NM = "KIM_GROUP_INQUIRY_SORT_PREV_COL_NM";
+        public static final String KIM_ROLE_INQUIRY_SORT_DESC_VALUE = "KIM_ROLE_INQUIRY_SORT_DESC_VALUE";
+        public static final String KIM_ROLE_INQUIRY_SORT_PREV_COL_NM = "KIM_ROLE_INQUIRY_SORT_PREV_COL_NM";
+
+        public static final String KIM_ROLE_DOCUMENT_ACTION = "identityManagementRoleDocument.do";
 		public static final String KIM_ROLE_INQUIRY_ACTION = "identityManagementRoleInquiry.do";
 		public static final String KIM_PERSON_DOCUMENT_ACTION = "identityManagementPersonDocument.do";
 		public static final String KIM_PERSON_INQUIRY_ACTION = "identityManagementPersonInquiry.do";
@@ -279,7 +285,7 @@ public final class KimConstants {
 		public static final String NAMESPACE_CODE = "namespaceCode";
 		public static final String PRINCIPAL_NAME = "principalName";
 		public static final String GROUP_NAME = "name";
-		public static final String ROLE_NAME = "roleName";
+		public static final String ROLE_NAME = "name";
 		public static final String PERMISSION_NAME = "name";
 		public static final String RESPONSIBILITY_NAME = "name";
 		public static final String PERMISSION_TEMPLATE_NAME = "name";
@@ -339,8 +345,10 @@ public final class KimConstants {
         public static final String ACTION_DETAILS_AT_ROLE_MEMBER_LEVEL = "actionDetailsAtRoleMemberLevel";
         public static final String DOCUMENT_NUMBER = "documentNumber";
         public static final String DOCUMENT_TYPE_NAME = "documentTypeName";
+        public static final String APP_CODE = "appCode";
         public static final String SECTION_ID = "sectionId";
         public static final String KIM_TYPE_ID = PrimaryKeyConstants.KIM_TYPE_ID;
+        public static final String KIM_TYPE_NAME = "kimTypeName";
         public static final String QUALIFIER_RESOLVER_PROVIDED_IDENTIFIER = "qualifierResolverProvidedIdentifier";
         public static final String VIEW_ID = "viewId";
         public static final String ACTION_EVENT = "actionEvent";

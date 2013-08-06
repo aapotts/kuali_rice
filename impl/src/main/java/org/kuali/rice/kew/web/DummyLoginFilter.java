@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class DummyLoginFilter implements Filter {
        		request.setAttribute("showPasswordField", Boolean.valueOf(showPassword));
             final String user = request.getParameter("__login_user");
             final String password = request.getParameter("__login_pw");
-            if (user != null) {
+            if (user != null && !user.trim().isEmpty()) {
             	// Very simple password checking. Nothing hashed or encrypted. This is strictly for demonstration purposes only.
             	final Principal principal = showPassword ? auth.getPrincipalByPrincipalNameAndPassword(user, password) : auth.getPrincipalByPrincipalName(user);
             	if (principal == null) {

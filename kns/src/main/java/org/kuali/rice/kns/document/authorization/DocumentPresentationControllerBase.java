@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,13 +71,16 @@ public class DocumentPresentationControllerBase extends org.kuali.rice.krad.docu
     	if(canAddAdhocRequests(document)){
     		documentActions.add(KRADConstants.KUALI_ACTION_CAN_ADD_ADHOC_REQUESTS);
     	}
-    	
-    	if(canBlanketApprove(document)){
-    		documentActions.add(KRADConstants.KUALI_ACTION_CAN_BLANKET_APPROVE);
-    	}
-    	if (canApprove(document)) {
-    		documentActions.add(KRADConstants.KUALI_ACTION_CAN_APPROVE);
-    	}
+
+        // KULRICE-8762: Approve & Blanket Approve should be disabled for a person who is doing COMPLETE action
+        boolean canComplete = this.canComplete(document);
+        if(!canComplete && canBlanketApprove(document)){
+            documentActions.add(KRADConstants.KUALI_ACTION_CAN_BLANKET_APPROVE);
+        }
+        if (!canComplete && canApprove(document)) {
+            documentActions.add(KRADConstants.KUALI_ACTION_CAN_APPROVE);
+        }
+
     	if (canDisapprove(document)) {
     		documentActions.add(KRADConstants.KUALI_ACTION_CAN_DISAPPROVE);
     	}

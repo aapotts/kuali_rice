@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public interface ActionListDAO {
     public Collection<ActionItemActionListExtension> getActionList(String principalId, ActionListFilter filter);
     public Collection<ActionItemActionListExtension> getActionListForSingleDocument(String documentId);
     public int getCount(String workflowId);
-    public List<Integer> getMaxActionItemIdAndCountForUser(String principalId);
+    public List<Object> getMaxActionItemDateAssignedAndCountForUser(String principalId);
 
     /**
      *

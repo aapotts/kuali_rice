@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,8 +108,12 @@ public class NamespaceWildcardAllowedAndOrStringExactMatchPermissionTypeServiceI
 		// Check if "namespaceCode" is one of the permission detail values.
 		if (attributes.containsKey(NAMESPACE_CODE)) {
 			nonNamespaceCodeAttributes.remove(NAMESPACE_CODE);
-            final Namespace namespace = CoreServiceApiServiceLocator.getNamespaceService().getNamespace(attributes.get(NAMESPACE_CODE));
-			if (namespace != null) {
+
+            final Namespace namespace =
+                    StringUtils.isBlank(attributes.get(NAMESPACE_CODE)) ?
+                            null : CoreServiceApiServiceLocator.getNamespaceService().getNamespace(attributes.get(NAMESPACE_CODE));
+
+            if (namespace != null) {
 			    errors.addAll(super.validateReferencesExistAndActive(kimType, Collections.singletonMap(NAMESPACE_CODE,
                         namespace.getCode()), previousValidationErrors));
 			} else {

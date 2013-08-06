@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,24 @@ public abstract class RemoteModuleServiceBase implements ModuleService {
             }
         }
         return false;
+    }
+
+    /**
+     * Utility method to check for the presence of a non blank value in the map for the given key
+     * Note: returns false if a null map is passed in.
+     *
+     * @param map the map to retrieve the value from
+     * @param key the key to use
+     * @return true if there is a non-blank value in the map for the given key.
+     */
+    protected static boolean isNonBlankValueForKey(Map<String, Object> map, String key) {
+        if (map == null) return false;
+
+        Object result = map.get(key);
+        if (result instanceof String) {
+            return !StringUtils.isBlank((String)result);
+        }
+        return result != null;
     }
 
     /**
@@ -180,7 +198,19 @@ public abstract class RemoteModuleServiceBase implements ModuleService {
      * @return String base lookup URL
      */
     protected String getRiceBaseLookupUrl() {
-        return getKualiConfigurationService().getPropertyValueAsString(KRADConstants.KRAD_SERVER_LOOKUP_URL_KEY);
+        return BaseLookupUrlsHolder.remoteKradBaseLookupUrl;
+    }
+
+    // Lazy initialization holder class idiom, see Effective Java item #71
+    protected static final class BaseLookupUrlsHolder {
+
+        public static final String localKradBaseLookupUrl;
+        public static final String remoteKradBaseLookupUrl;
+
+        static {
+            remoteKradBaseLookupUrl = KRADServiceLocator.getKualiConfigurationService().getPropertyValueAsString(KRADConstants.KRAD_SERVER_LOOKUP_URL_KEY);
+            localKradBaseLookupUrl = KRADServiceLocator.getKualiConfigurationService().getPropertyValueAsString(KRADConstants.KRAD_LOOKUP_URL_KEY);
+        }
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -246,14 +246,33 @@ function isCalledWithinLightbox() {
 }
 
 /*
+ * Reload page with lookup result URL
+ */
+function returnLookupResultReload(aElement) {
+    if (parent.jQuery('iframe[id*=easyXDM_]').length > 0) {
+        // portal and content on same domain
+        top.jQuery('iframe[id*=easyXDM_]').contents().find('#iframeportlet').attr('src', aElement.attr('href'));
+    } else if (parent.parent.jQuery('#iframeportlet').length > 0) {
+        // portal and content on different domain
+        parent.parent.jQuery('#iframeportlet').attr('src', aElement.attr('href'))
+    } else {
+        window.open(aElement.attr('href'), aElement.attr('target'));
+    }
+}
+
+/*
  * Function that returns lookup results by script
  */
 function returnLookupResultByScript(fieldName, value) {
     var returnField;
-    if (usePortalForContext()) {
-        returnField = top.jQuery('#iframeportlet').contents().find('[name="' + escapeName(fieldName) + '"]');
-    }else{
-        returnField = jq('[name="' + escapeName(fieldName) + '"]');
+    if (parent.jQuery('iframe[id*=easyXDM_]').length > 0) {
+        // portal and content on same domain
+        returnField = top.jQuery('iframe[id*=easyXDM_]').contents().find('#iframeportlet').contents().find('[name="' + escapeName(fieldName) + '"]');
+    } else if (parent.parent.jQuery('#iframeportlet').length > 0) {
+        // portal and content on different domain
+        returnField = parent.parent.jQuery('#iframeportlet').contents().find('[name="' + escapeName(fieldName) + '"]');
+    } else {
+        returnField = top.jq('[name="' + escapeName(fieldName) + '"]');
     }
     returnField.val(value);
     returnField.focus();
@@ -268,14 +287,14 @@ function returnLookupResultByScript(fieldName, value) {
  * Function that sets the return target when returning multiple lookup results
  */
 function setMultiValueReturnTarget() {
-    if (usePortalForContext()) {
-        jQuery('#kualiForm').attr('target',getContext().find('#iframeportlet').attr('name'));
-    }else{
-        if (parent.jq != null) {
-            jQuery('#kualiForm').attr('target',parent.jQuery('#iframeportlet').attr('name'));
-        }else{
-            jQuery('#kualiForm').attr('target','_parent');
-        }
+    if (parent.jQuery('iframe[id*=easyXDM_]').length > 0) {
+        // portal and content on same domain
+        top.jQuery('iframe[id*=easyXDM_]').contents().find('#iframeportlet').contents().find('#kualiForm').attr('target','iframeportlet');
+    } else if (parent.parent.jQuery('#iframeportlet').length > 0) {
+        // portal and content on different domain
+        parent.jQuery('#kualiForm').attr('target','iframeportlet');
+    } else {
+        top.jQuery('#kualiForm').attr('target','_parent');
     }
 }
 
@@ -311,8 +330,8 @@ function showDirectInquiry(url, paramMap, showLightBox, lightBoxOptions) {
     }
 
     if (showLightBox) {
-
-        if (getContext().find('.fancybox-inner').length) {
+        // Check if this is called within a light box
+        if (!getContext().find('.fancybox-inner').length) {
             queryString = queryString + "&showHistory=false&dialogMode=true";
             lightBoxOptions['href'] = url + queryString;
             getContext().fancybox(lightBoxOptions);

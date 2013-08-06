@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,13 @@ import org.kuali.rice.krad.bo.BusinessObject
 import org.kuali.rice.kim.impl.group.GroupBo
 import org.kuali.rice.kim.impl.identity.principal.PrincipalBo;
 import org.kuali.rice.kim.api.KimConstants
-import org.kuali.rice.krad.service.KRADServiceLocator;
+import org.kuali.rice.krad.service.KRADServiceLocator
+import org.apache.commons.lang.ObjectUtils;
 
+/**
+ * The column names have been used in a native query in RoleDaoOjb and will need to be modified if any changes to the
+ * column names are made here.
+ */
 @Entity
 @Table(name = "KRIM_ROLE_MBR_T")
 public class RoleMemberBo extends AbstractMemberBo implements RoleMemberContract {
@@ -128,25 +133,13 @@ public class RoleMemberBo extends AbstractMemberBo implements RoleMemberContract
     }
 
     protected BusinessObject getMember(MemberType memberType, String memberId) {
-        Class<? extends BusinessObject> roleMemberTypeClass = null;
-        String roleMemberIdName = "";
         if (MemberType.PRINCIPAL.equals(memberType)) {
-            roleMemberTypeClass = PrincipalBo.class;
-            roleMemberIdName = KimConstants.PrimaryKeyConstants.PRINCIPAL_ID;
-            Principal principalInfo = KimApiServiceLocator.getIdentityService().getPrincipal(memberId);
+            return PrincipalBo.from(KimApiServiceLocator.getIdentityService().getPrincipal(memberId));
         } else if (MemberType.GROUP.equals(memberType)) {
-            roleMemberTypeClass = GroupBo.class;
-            roleMemberIdName = KimConstants.PrimaryKeyConstants.GROUP_ID;
-            Group groupInfo = null;
-            groupInfo = KimApiServiceLocator.getGroupService().getGroup(memberId);
+           return GroupBo.from(KimApiServiceLocator.getGroupService().getGroup(memberId));
         } else if (MemberType.ROLE.equals(memberType)) {
-            roleMemberTypeClass = RoleBo.class;
-            roleMemberIdName = KimConstants.PrimaryKeyConstants.ROLE_ID;
-            Role role = KimApiServiceLocator.getRoleService().getRole(memberId);
+           return RoleBo.from(KimApiServiceLocator.getRoleService().getRole(memberId));
         }
-        Map<String, String> criteria = new HashMap<String, String>();
-        criteria.put(roleMemberIdName, memberId);
-        return KRADServiceLocator.getBusinessObjectService().findByPrimaryKey(roleMemberTypeClass, criteria);
     }
 
     public String getMemberName() {
@@ -194,6 +187,116 @@ public class RoleMemberBo extends AbstractMemberBo implements RoleMemberContract
         }
         return this.memberNamespaceCode;
 
+    }
+
+    @Override
+    public List buildListOfDeletionAwareLists() {
+        List managedLists = super.buildListOfDeletionAwareLists();
+
+        managedLists.add(attributeDetails);
+        return managedLists;
+    }
+
+    /**
+     *
+     * This method compares role member passed with this role member object and returns true if no differences or returns false.
+     *
+     * @param targetMbrImpl
+     * @return boolean true if the member has not changed, false if the member has changed
+     */
+    public boolean equals(RoleMemberBo targetMbrBo) {
+        if (!StringUtils.equals(getId(), targetMbrBo.getId())) {
+            return false;
+        }
+
+        if (!StringUtils.equals(getType().getCode(), targetMbrBo.getType().getCode())) {
+            return false;
+        }
+
+        if (!StringUtils.equals(getMemberId(), targetMbrBo.getMemberId())) {
+            return false;
+        }
+
+        if (!ObjectUtils.equals(getActiveFromDate(), targetMbrBo.getActiveFromDate())) {
+            return false;
+        }
+
+        if (!ObjectUtils.equals(getActiveToDate(), targetMbrBo.getActiveToDate())) {
+            return false;
+        }
+
+        // Prepare list of attributes from this role member eliminating blank attributes
+        Map<String, String> sourceMbrAttrDataList =  new HashMap<String, String>();
+
+        for (Iterator iter = getAttributes().entrySet().iterator(); iter.hasNext();) {
+            Map.Entry mbrAttr = (Map.Entry) iter.next();
+            if (StringUtils.isNotBlank(mbrAttr.getValue())) {
+                sourceMbrAttrDataList.put(mbrAttr.getKey(), mbrAttr.getValue());
+            };
+        }
+
+        // Prepare list of attributes from target role member eliminating blank attributes
+        Map<String, String> targetMbrAttrDataList =  new HashMap<String, String>();
+
+        for (Iterator iter = targetMbrBo.getAttributes().entrySet().iterator(); iter.hasNext();) {
+            Map.Entry mbrAttr = (Map.Entry) iter.next();
+            if (StringUtils.isNotBlank(mbrAttr.getValue())) {
+                targetMbrAttrDataList.put(mbrAttr.getKey(), mbrAttr.getValue());
+            };
+        }
+
+        if (targetMbrAttrDataList.size() != sourceMbrAttrDataList.size()) {
+            return false;
+        }
+
+        // Check if any attributes changed, then return false
+        Map<String, String> matchedAttrs =  new HashMap<String, String>();
+        for (Iterator iter = sourceMbrAttrDataList.entrySet().iterator(); iter.hasNext();) {
+            Map.Entry newAttr = (Map.Entry) iter.next();
+            for (Iterator iter2 = targetMbrAttrDataList.entrySet().iterator(); iter2.hasNext();) {
+                Map.Entry origAttr = (Map.Entry) iter2.next();
+                if (StringUtils.equals(origAttr.getKey(), newAttr.getKey())) {
+                    if (StringUtils.equals(origAttr.getValue(), newAttr.getValue())) {
+                        matchedAttrs.put(newAttr.getKey(), newAttr.getValue());
+                    }
+                }
+            }
+        }
+
+
+        if (matchedAttrs.size() != sourceMbrAttrDataList.size()) {
+            return false;
+        }
+
+        // Check responsibility actions
+        int targetMbrActionsSize = (targetMbrBo.getRoleRspActions() == null) ? 0 : targetMbrBo.getRoleRspActions().size();
+        int sourceMbrActionsSize = (getRoleRspActions() == null) ? 0 : getRoleRspActions().size();
+
+        if (targetMbrActionsSize != sourceMbrActionsSize) {
+            return false;
+        }
+
+        if (sourceMbrActionsSize != 0) {
+            List<RoleResponsibilityActionBo> matchedRspActions = new ArrayList<RoleResponsibilityActionBo>();
+
+            // Check if any responsibility actions changed
+            for (RoleResponsibilityActionBo newAction : getRoleRspActions()) {
+                for (RoleResponsibilityActionBo origAction : targetMbrBo.getRoleRspActions()) {
+
+                    if (StringUtils.equals(origAction.getId(), newAction.getId())) {
+                        if (origAction.equals(newAction)) {
+                            matchedRspActions.add(newAction);
+                        }
+                    }
+                }
+            }
+
+            if (matchedRspActions.size() != getRoleRspActions().size()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

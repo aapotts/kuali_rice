@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -115,6 +115,20 @@
         </property>
         <property name="localServiceName" value="documentOrchestrationQueue"/>
         <property name="priority" value="4"/>
+        <property name="messageExceptionHandler"
+                  value="org.kuali.rice.kew.messaging.exceptionhandling.DocumentMessageExceptionHandler"/>
+      </bean>
+    </property>
+  </bean>
+
+  <bean id="rice.kew.backdoorRestrictionPermissionTypeService.exporter" parent="kewServiceExporter">
+    <property name="serviceDefinition">
+      <bean parent="kewService">
+        <property name="service">
+          <ref bean="backdoorRestrictionPermissionTypeService"/>
+        </property>
+        <property name="localServiceName" value="backdoorRestrictionPermissionTypeService"/>
+        <property name="priority" value="10"/>
         <property name="messageExceptionHandler"
                   value="org.kuali.rice.kew.messaging.exceptionhandling.DocumentMessageExceptionHandler"/>
       </bean>

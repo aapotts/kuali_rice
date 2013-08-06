@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ public class AttachmentServlet extends HttpServlet {
                     if(!secureChecks || (authorized && customAttributeAuthorized)){//If this user can see this document, they can get the attachment(s)						
                     	response.setContentLength((int)file.length());
 						response.setContentType(attachment.getMimeType());
-						response.setHeader("Content-disposition", "attachment; filename="+attachment.getFileName());
+						response.setHeader("Content-disposition", "attachment; filename=\"" + attachment.getFileName() + "\"");
 						FileInputStream attachmentFile = new FileInputStream(file);
 						BufferedInputStream inputStream = new BufferedInputStream(attachmentFile);
 						OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());

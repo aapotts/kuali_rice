@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.kuali.rice.kew.util;
+
+import java.util.Formatter;
 
 /**
  * Records and logs performance information about an elapsed time period.
@@ -48,8 +50,8 @@ public class PerformanceLogger {
     	if ( LOG.isInfoEnabled() ) {
 	        long endTime = System.currentTimeMillis();
 	        long totalTime = endTime - startTime;
-	        String logMessage = "Time: "+totalTime+" ms, ";
-	        if (documentId != null) {
+            String logMessage = new Formatter().format("Time: %7dms, ", totalTime).toString();
+            if (documentId != null) {
 	            logMessage+="docId="+documentId+", ";
 	        }
 	        logMessage += message;
@@ -59,5 +61,24 @@ public class PerformanceLogger {
 	        LOG.info(logMessage);
     	}
     }
-    
+
+    public void debug(String message) {
+        this.debug(message, false);
+    }
+
+    public void debug(String message, boolean terminalPoint) {
+        if ( LOG.isDebugEnabled() ) {
+            long endTime = System.currentTimeMillis();
+            long totalTime = endTime - startTime;
+            String logMessage = new Formatter().format("Time: %7dms, ", totalTime).toString();
+            if (documentId != null) {
+                logMessage+="docId="+documentId+", ";
+            }
+            logMessage += message;
+            if (terminalPoint) {
+                logMessage += "\n";
+            }
+            LOG.debug(logMessage);
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,13 @@ import org.kuali.rice.kns.service.MaintenanceDocumentDictionaryService;
 import org.kuali.rice.kns.util.KNSGlobalVariables;
 import org.kuali.rice.kns.util.MaintenanceUtils;
 import org.kuali.rice.kns.util.WebUtils;
+import org.kuali.rice.kns.web.struts.form.InquiryForm;
 import org.kuali.rice.kns.web.struts.form.KualiDocumentFormBase;
 import org.kuali.rice.kns.web.struts.form.KualiForm;
 import org.kuali.rice.kns.web.struts.form.KualiMaintenanceForm;
+import org.kuali.rice.kns.web.ui.Field;
+import org.kuali.rice.kns.web.ui.Row;
+import org.kuali.rice.kns.web.ui.Section;
 import org.kuali.rice.krad.bo.DocumentAttachment;
 import org.kuali.rice.krad.bo.MultiDocumentAttachment;
 import org.kuali.rice.krad.bo.PersistableAttachment;
@@ -619,7 +623,11 @@ public class KualiMaintenanceDocumentAction extends KualiDocumentActionBase {
 	 */
 	@Override
 	public ActionForward docHandler(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		super.docHandler(mapping, form, request, response);
+		ActionForward af = super.docHandler(mapping, form, request, response);
+        if (af.getName().equals(KRADConstants.KRAD_INITIATED_DOCUMENT_VIEW_NAME))
+        {
+            return af;
+        }
 		KualiMaintenanceForm kualiMaintenanceForm = (KualiMaintenanceForm) form;
 
 		if (KewApiConstants.ACTIONLIST_COMMAND.equals(kualiMaintenanceForm.getCommand()) || KewApiConstants.DOCSEARCH_COMMAND.equals(kualiMaintenanceForm.getCommand()) || KewApiConstants.SUPERUSER_COMMAND.equals(kualiMaintenanceForm.getCommand()) || KewApiConstants.HELPDESK_ACTIONLIST_COMMAND.equals(kualiMaintenanceForm.getCommand()) && kualiMaintenanceForm.getDocId() != null) {
@@ -638,7 +646,7 @@ public class KualiMaintenanceDocumentAction extends KualiDocumentActionBase {
 			}
 			else {
 				LOG.error("Illegal State: document is not a maintenance document");
-				throw new IllegalStateException("Document is not a maintenance document");
+				throw new IllegalArgumentException("Document is not a maintenance document");
 			}
 		}
 		else if (KewApiConstants.INITIATE_COMMAND.equals(kualiMaintenanceForm.getCommand())) {
@@ -647,7 +655,7 @@ public class KualiMaintenanceDocumentAction extends KualiDocumentActionBase {
 		}
 		else {
 			LOG.error("We should never have gotten to here");
-			throw new IllegalStateException("docHandler called with invalid parameters");
+			throw new IllegalArgumentException("docHandler called with invalid parameters");
 		}
 		return mapping.findForward(RiceConstants.MAPPING_BASIC);
 	}
@@ -770,7 +778,9 @@ public class KualiMaintenanceDocumentAction extends KualiDocumentActionBase {
                 if (getBusinessObjectAuthorizationService().attributeValueNeedsToBeEncryptedOnFormsAndLinks(maintainable.getBoClass(), keyPropertyName)) {
 					try {
                     	keyValue = StringUtils.removeEnd(keyValue, EncryptionService.ENCRYPTION_POST_PREFIX);
-						keyValue = encryptionService.decrypt(keyValue);
+                        if(CoreApiServiceLocator.getEncryptionService().isEnabled()) {
+						    keyValue = encryptionService.decrypt(keyValue);
+                        }
 					}
 					catch (GeneralSecurityException e) {
 						throw new RuntimeException(e);
@@ -1081,8 +1091,6 @@ public class KualiMaintenanceDocumentAction extends KualiDocumentActionBase {
 
 		return mapping.findForward(RiceConstants.MAPPING_BASIC);
 	}
-
-
 
 	/**
 	 * This method clears the value of the primary key fields on a Business Object.

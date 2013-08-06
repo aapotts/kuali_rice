@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,7 +161,11 @@ public class NoteAction extends KewKualiAction {
         		attachment.setMimeType(uploadedFile.getContentType());
         		attachment.setNote(noteToSave);
         		noteToSave.getAttachments().add(attachment);
-        	}
+            } else {
+                if(noteToSave.getNoteId() != null) { //note is not new and we need to ensure the attachments are preserved
+                    noteToSave.setAttachments(getNoteService().getNoteByNoteId(noteToSave.getNoteId()).getAttachments());
+                }
+            }
             getNoteService().saveNote(noteToSave);
         }
         if (noteForm.getShowEdit().equals("yes")) {

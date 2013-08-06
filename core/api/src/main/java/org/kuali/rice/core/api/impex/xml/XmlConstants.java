@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ public final class XmlConstants {
     public static final String SHORT_LABEL = "shortLabel";
     public static final String KEY = "key";
     public static final String VALUE = "value";
+    public static final String STRING_VALUE = "stringValue";
     public static final String ACTIVE= "active";
     public static final String TYPE = "type";
 
@@ -72,6 +73,7 @@ public final class XmlConstants {
     public static final String SERVICE_NAMESPACE = "serviceNamespace";
     public static final String APPLICATION_ID = "applicationId";
     public static final String POST_PROCESSOR_NAME = "postProcessorName";
+    public static final String AUTHORIZER = "authorizer";
     public static final String SUPER_USER_WORKGROUP_NAME = "superUserWorkgroupName";
     public static final String SUPER_USER_GROUP_NAME = "superUserGroupName";
     public static final String BLANKET_APPROVE_WORKGROUP_NAME = "blanketApproveWorkgroupName";
@@ -106,6 +108,7 @@ public final class XmlConstants {
     public static final String NEXT_NODE = "nextNode";
     public static final String APP_DOC_STATUSES = "validApplicationStatuses";
     public static final String STATUS = "status";
+    public static final String CATEGORY = "category";
 
     // rules
     public static final String RULES = "rules";

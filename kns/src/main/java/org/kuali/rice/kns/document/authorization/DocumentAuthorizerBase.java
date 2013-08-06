@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,8 +151,9 @@ public class DocumentAuthorizerBase extends BusinessObjectAuthorizerBase impleme
     }
 
     public boolean canEdit(Document document, Person user) {
-        return isAuthorizedByTemplate(document, KRADConstants.KNS_NAMESPACE,
-                KimConstants.PermissionTemplateNames.EDIT_DOCUMENT, user.getPrincipalId());
+        // KULRICE-7864: document can be editable on adhoc route for completion 
+        return document.getDocumentHeader().getWorkflowDocument().isCompletionRequested()
+                || isAuthorizedByTemplate(document, KRADConstants.KNS_NAMESPACE, KimConstants.PermissionTemplateNames.EDIT_DOCUMENT, user.getPrincipalId());
     }
 
     public boolean canAnnotate(Document document, Person user) {
@@ -178,7 +179,9 @@ public class DocumentAuthorizerBase extends BusinessObjectAuthorizerBase impleme
     }
 
     public boolean canCancel(Document document, Person user) {
-        return isAuthorizedByTemplate(document, KRADConstants.KUALI_RICE_WORKFLOW_NAMESPACE,
+        // KULRICE-8762: CANCEL button should be enabled for a person who is doing COMPLETE action 
+        boolean isCompletionRequested = document.getDocumentHeader().getWorkflowDocument().isCompletionRequested();
+        return isCompletionRequested || isAuthorizedByTemplate(document, KRADConstants.KUALI_RICE_WORKFLOW_NAMESPACE,
                 KimConstants.PermissionTemplateNames.CANCEL_DOCUMENT, user.getPrincipalId());
     }
 
@@ -346,5 +349,4 @@ public class DocumentAuthorizerBase extends BusinessObjectAuthorizerBase impleme
         WorkflowDocument workflowDocument = document.getDocumentHeader().getWorkflowDocument();
         return workflowDocument.getInitiatorPrincipalId().equalsIgnoreCase(user.getPrincipalId());
     }
-
 }

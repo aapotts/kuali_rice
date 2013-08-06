@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -59,7 +60,8 @@ public class BusClientFailureProxy extends BaseTargetedInvocationHandler {
 		serviceRemovalExceptions.add(ConnectTimeoutException.class);
 		serviceRemovalExceptions.add(ConnectionPoolTimeoutException.class);
 		serviceRemovalExceptions.add(ConnectException.class);
-	}
+        serviceRemovalExceptions.add(SocketTimeoutException.class);
+    }
 	
 	static {
 	    serviceRemovalResponseCodes.add(new Integer(404));
@@ -84,22 +86,26 @@ public class BusClientFailureProxy extends BaseTargetedInvocationHandler {
 			} catch (Throwable throwable) {			
 				if (isServiceRemovalException(throwable)) {
 					synchronized (failoverLock) {
-						LOG.error("Exception caught accessing remote service " + this.serviceConfiguration.getServiceName(), throwable);
-						if (servicesTried == null) {
+                        LOG.error("Exception caught accessing remote service " + this.serviceConfiguration.getServiceName() + " at " + this.serviceConfiguration.getEndpointUrl(), throwable);
+                        if (servicesTried == null) {
 							servicesTried = new HashSet<ServiceConfiguration>();
 							servicesTried.add(serviceConfiguration);
 						}
 						Object failoverService = null;
-						List<Endpoint> endpoints = KsbApiServiceLocator.getServiceBus().getEndpoints(serviceConfiguration.getServiceName());
+						List<Endpoint> endpoints = KsbApiServiceLocator.getServiceBus().getEndpoints(serviceConfiguration.getServiceName(), serviceConfiguration.getApplicationId());
 						for (Endpoint endpoint : endpoints) {
 							if (!servicesTried.contains(endpoint.getServiceConfiguration())) {
 								failoverService = endpoint.getService();
+                                if(Proxy.isProxyClass(failoverService.getClass()) && Proxy.getInvocationHandler(failoverService) instanceof BusClientFailureProxy) {
+                                    failoverService = ((BusClientFailureProxy)Proxy.getInvocationHandler(failoverService)).getTarget();
+                                }
 								servicesTried.add(endpoint.getServiceConfiguration());
+                                break; // KULRICE-8728: BusClientFailureProxy doesn't try all endpoint options
 							}
 						}									
 						if (failoverService != null) {
-							LOG.info("Refetched replacement service for service " + this.serviceConfiguration.getServiceName());
-							// as per KULRICE-4287, reassign target to the new service we just fetched, hopefully this one works better!
+                            LOG.info("Refetched replacement service for service " + this.serviceConfiguration.getServiceName() + " at " + this.serviceConfiguration.getEndpointUrl());
+                            // as per KULRICE-4287, reassign target to the new service we just fetched, hopefully this one works better!
 							setTarget(failoverService);
 						} else {
 							LOG.error("Didn't find replacement service throwing exception");

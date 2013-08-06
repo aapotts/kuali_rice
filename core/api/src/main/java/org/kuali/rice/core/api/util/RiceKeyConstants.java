@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,14 +54,29 @@ public final class RiceKeyConstants {
     public static final String ERROR_OUT_OF_RANGE = "error.outOfRange";
 
     public static final String ERROR_INACTIVATION_BLOCKED = "error.inactivation.blocked";
-
+    
+    // KULRICE-7419: Adhoc route completion validation rule
+    public static final String ERROR_ADHOC_COMPLETE_PERSON_IS_INITIATOR = "error.adhoc.complete.person.is.initiator";
+    
+    // KULRICE-8760: Multiple complete adhoc requests should not be allowed on the same document
+    public static final String ERROR_ADHOC_COMPLETE_MORE_THAN_ONE = "error.adhoc.complete.more.than.one.request";
+    
+    // KULRICE-7864: blanket approve should not be allowed when adhoc route for completion request is newly added 
+    public static final String ERROR_ADHOC_COMPLETE_BLANKET_APPROVE_NOT_ALLOWED = "error.adhoc.complete.blanket.approve.not.allowed";    
+    
     public static final String ERROR_INVALID_ADHOC_PERSON_ID = "error.adhoc.invalid.person";
     public static final String ERROR_MISSING_ADHOC_PERSON_ID = "error.adhoc.missing.person";
     public static final String ERROR_UNAUTHORIZED_ADHOC_PERSON_ID = "error.adhoc.unauthorized.person";
     public static final String ERROR_INACTIVE_ADHOC_PERSON_ID = "error.adhoc.inactive.person";
     public static final String ERROR_INVALID_ADHOC_WORKGROUP_ID = "error.adhoc.invalid.workgroup";
     public static final String ERROR_MISSING_ADHOC_WORKGROUP_ID = "error.adhoc.missing.workgroup";
+    public static final String ERROR_INVALID_ADHOC_WORKGROUP_NAMESPACECODE = "error.adhoc.invalid.workgroupNamespaceCode";
+    public static final String ERROR_UNAUTHORIZED_ADHOC_WORKGROUP_ID = "error.adhoc.unauthorized.workgroup";
     public static final String MESSAGE_ADHOC_ANNOTATION = "message.adhoc.annotation";
+    
+    //  KULRICE-8091: Adhoc routing tab utilizing Groups on all documents missing asterisks 
+    public static final String ERROR_ADHOC_INVALID_WORKGROUP_NAMESPACE_MISSING="error.adhoc.invalid.workgroup.namespace.missing";
+    public static final String ERROR_ADHOC_INVALID_WORKGROUP_NAMESPACE= "error.adhoc.invalid.workgroup.namespace";
 
     public static final String ERROR_SECURE_FIELD = "error.secureField";
     public static final String ERROR_SEND_NOTE_NOTIFICATION_RECIPIENT = "error.send.note.notification.recipient";
@@ -124,6 +139,7 @@ public final class RiceKeyConstants {
 
     public static final String WARNING_MAINTENANCE_LOCKED = "warning.maintenance.locked";
     public static final String ERROR_VERSION_MISMATCH = "error.version.mismatch";
+    public static final String UNABLE_TO_GET_DATA_FROM_XML = "unable.to.get.data.from.xml";
 
     public static final String MESSAGE_CANCELLED = "message.cancelled";
     public static final String MESSAGE_RELOADED = "message.document.reloaded";
@@ -172,6 +188,7 @@ public final class RiceKeyConstants {
     public static final String ERROR_EXIST_PRINCIPAL_NAME = "error.exist.principalName";
     public static final String ERROR_ASSIGN_ROLE = "error.assign.role";
     public static final String ERROR_ASSIGN_GROUP = "error.assign.group";
+    public static final String ERROR_ASSIGN_GROUP_INVALID = "error.assign.group.invalid";
     public static final String ERROR_ASSIGN_PERMISSION = "error.assign.perimssion";
     public static final String ERROR_ASSIGN_RESPONSIBILITY = "error.assign.responsibility";
     public static final String ERROR_POPULATE_GROUP = "error.populate.group";
@@ -204,8 +221,11 @@ public final class RiceKeyConstants {
     public static final String INFO_WILDCARDS_AND_OPERATORS_TREATED_LITERALLY = "info.wildcards.and.operators.treated.literally";
 
     public static final String ERROR_DOCUMENT_IDENTITY_MANAGEMENT_PERSON_QUALIFIER_VALUE_NOT_UNIQUE = "error.document.identityManagementPerson.qualifier.valueNotUnique";
-    
-	private RiceKeyConstants() {
+
+    // PeopleFlow
+    public static final String PEOPLEFLOW_DUPLICATE = "peopleFlow.duplicate";
+
+    private RiceKeyConstants() {
 		throw new UnsupportedOperationException("do not call");
 	}
 }

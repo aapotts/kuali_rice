@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.hibernate.annotations.Type
 import org.kuali.rice.kim.api.role.RoleResponsibilityAction
 import org.kuali.rice.kim.api.role.RoleResponsibilityActionContract
 import org.kuali.rice.krad.bo.PersistableBusinessObjectBase
+import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang.ObjectUtils
 
 /**
  * This is a description of what this class does - kellerj don't forget to fill this in. 
@@ -91,5 +93,25 @@ public class RoleResponsibilityActionBo extends PersistableBusinessObjectBase im
         bo.roleResponsibility = RoleResponsibilityBo.from(immutable.getRoleResponsibility());
         bo.versionNumber = immutable.getVersionNumber();
         return bo;
+    }
+
+    public boolean equals(RoleResponsibilityActionBo roleRspActn){
+        if(!StringUtils.equals(roleRspActn.getRoleMemberId(),getRoleMemberId())) {
+            return false;
+        }
+        if(!StringUtils.equals(roleRspActn.getRoleResponsibilityId(),getRoleResponsibilityId())) {
+            return false;
+        }
+        if(!StringUtils.equals(roleRspActn.getActionTypeCode(),getActionTypeCode())) {
+            return false;
+        }
+        if(!StringUtils.equals(roleRspActn.getActionPolicyCode(),getActionPolicyCode())) {
+            return false;
+        }
+        if(!ObjectUtils.equals(roleRspActn.getPriorityNumber(), getPriorityNumber())) {
+            return false;
+        }
+
+        return true;
     }
 }

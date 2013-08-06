@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,10 @@ public class RuleDelegationDAOOjbImpl extends PersistenceBrokerDaoSupport implem
                                                                principalId, activeInd,
                                                                extensionValues, workflowIdDirective));
 
-        return (List<RuleDelegationBo>) this.getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(RuleDelegationBo.class, crit, true));
+        QueryByCriteria query = new QueryByCriteria(RuleDelegationBo.class, crit, true);
+        query.setEndAtIndex(KewApiConstants.DELEGATE_RULE_LOOKUP_MAX_ROWS_RETURNED);
+
+        return (List<RuleDelegationBo>) this.getPersistenceBrokerTemplate().getCollectionByQuery(query);
     }
 
     /**
@@ -133,7 +136,11 @@ public class RuleDelegationDAOOjbImpl extends PersistenceBrokerDaoSupport implem
                                                                ruleDescription, workgroupIds,
                                                                workflowId, activeInd,
                                                                extensionValues, actionRequestCodes));
-       return (List) this.getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(RuleDelegationBo.class, crit, true));
+
+        QueryByCriteria query = new QueryByCriteria(RuleDelegationBo.class, crit, true);
+        query.setEndAtIndex(KewApiConstants.DELEGATE_RULE_LOOKUP_MAX_ROWS_RETURNED);
+
+        return (List) this.getPersistenceBrokerTemplate().getCollectionByQuery(query);
     }
 
     private ReportQueryByCriteria getResponsibilitySubQuery(String ruleResponsibilityName) {
@@ -183,7 +190,7 @@ public class RuleDelegationDAOOjbImpl extends PersistenceBrokerDaoSupport implem
         List<String> workgroupIds = new ArrayList<String>();
         Boolean searchUser = Boolean.FALSE;
         Boolean searchUserInWorkgroups = Boolean.FALSE;
-        if (workflowIdDirective != null) {/** IU patch EN-1552 */
+        if (workflowIdDirective != null) {
             if ("group".equals(workflowIdDirective)) {
                 searchUserInWorkgroups = Boolean.TRUE;
             } else if ("".equals(workflowIdDirective)) {

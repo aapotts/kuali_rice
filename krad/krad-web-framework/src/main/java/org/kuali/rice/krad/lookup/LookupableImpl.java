@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,6 +136,16 @@ public class LookupableImpl extends ViewHelperServiceImpl implements Lookupable 
     }
 
     /**
+     * @see org.kuali.rice.krad.lookup.Lookupable#initSuppressAction(org.kuali.rice.krad.web.form.LookupForm)
+     */
+    @Override
+    public void initSuppressAction(LookupForm lookupForm) {
+        LookupViewAuthorizerBase lookupAuthorizer = (LookupViewAuthorizerBase) lookupForm.getView().getAuthorizer();
+        Person user = GlobalVariables.getUserSession().getPerson();
+        ((LookupView) lookupForm.getView()).setSuppressActions(!lookupAuthorizer.canInitiateDocument(lookupForm, user));
+    }
+
+    /**
      * @see org.kuali.rice.krad.lookup.Lookupable#performSearch
      */
     @Override
@@ -233,7 +243,9 @@ public class LookupableImpl extends ViewHelperServiceImpl implements Lookupable 
                 if (fieldValue.endsWith(EncryptionService.ENCRYPTION_POST_PREFIX)) {
                     String encryptedValue = StringUtils.removeEnd(fieldValue, EncryptionService.ENCRYPTION_POST_PREFIX);
                     try {
-                        fieldValue = getEncryptionService().decrypt(encryptedValue);
+                        if(CoreApiServiceLocator.getEncryptionService().isEnabled()) {
+                            fieldValue = getEncryptionService().decrypt(encryptedValue);
+                        }
                     } catch (GeneralSecurityException e) {
                         LOG.error("Error decrypting value for business object class " + getDataObjectClass() +
                                 " attribute " + fieldName, e);
@@ -605,7 +617,7 @@ public class LookupableImpl extends ViewHelperServiceImpl implements Lookupable 
                     returnLinkField.setOnClickScript(script.append("closeLightbox();").toString());
                 }  else{
                     // Close the light box if return target is not _self or _parent
-                    returnLinkField.setOnClickScript("e.preventDefault();closeLightbox();createLoading(true);window.open(jq(this).attr('href'), jq(this).attr('target'));");
+                    returnLinkField.setOnClickScript("e.preventDefault();closeLightbox();createLoading(true);returnLookupResultReload(jQuery(this));");
                 }
             }
         } else {

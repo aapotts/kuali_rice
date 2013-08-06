@@ -1,6 +1,6 @@
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -140,7 +140,8 @@
 		<field-descriptor name="ownedByPrincipalIdentifier" column="PRNCPL_ID" jdbc-type="VARCHAR" />
 		<field-descriptor name="generatedTimestamp" column="GNRT_DT" jdbc-type="TIMESTAMP" />
 		<field-descriptor name="lockDescriptor" column="LOCK_DESC_TXT" jdbc-type="VARCHAR" />
-	</class-descriptor>
+    <field-descriptor name="sessionId" column="SESN_ID" jdbc-type="VARCHAR" />
+  </class-descriptor>
 
 	<class-descriptor class="org.kuali.rice.krad.bo.Note" table="KRNS_NTE_T">
 		<field-descriptor name="noteIdentifier" column="NTE_ID" jdbc-type="BIGINT" primarykey="true" indexed="true" autoincrement="true"

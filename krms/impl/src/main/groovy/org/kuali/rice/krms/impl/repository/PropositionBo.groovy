@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,7 +279,6 @@ public class PropositionBo extends PersistableBusinessObjectBase implements Prop
 
         if (addNewChild) {
             PropositionBo newProp = createSimplePropositionBoStub(existing, PropositionType.SIMPLE.code)
-            newProp.setDescription("New Proposition " + UUID.randomUUID().toString());
             components.add(newProp);
             prop.setEditMode(false); // set the parent edit mode back to null or we end up with 2 props in edit mode
         }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,7 @@ public class WebModuleLoaderListener implements ServletContextListener {
         List<String> springFileLocations = new ArrayList<String>();
         // loop over the installed modules, adding their web module configuration spring files
         @SuppressWarnings("unchecked")
-        final Collection<ModuleConfigurer> riceModules =
-                (Collection<ModuleConfigurer>) ConfigContext.getCurrentContextConfig().getObject("ModuleConfigurers");
+        final Collection<ModuleConfigurer> riceModules = ModuleConfigurer.getCurrentContextConfigurers();
         for ( ModuleConfigurer module : riceModules ) {
             if ( module.shouldRenderWebInterface() ) {
                 WebModuleConfiguration webModuleConfiguration = module.getWebModuleConfiguration();

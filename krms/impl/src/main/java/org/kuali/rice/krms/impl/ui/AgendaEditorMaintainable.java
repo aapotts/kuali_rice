@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -330,7 +330,7 @@ public class AgendaEditorMaintainable extends MaintainableImpl {
                 newTerm.setDescription(propositionBo.getNewTermDescription());
                 newTerm.setSpecificationId(termSpecId);
                 newTerm.setId(KRADServiceLocator.getSequenceAccessorService().getNextAvailableSequenceNumber(
-                        KrmsMaintenanceConstants.Sequences.TERM_SPECIFICATION).toString());
+                        KrmsMaintenanceConstants.Sequences.TERM_SPECIFICATION, TermBo.class).toString());
 
                 List<TermParameterBo> params = new ArrayList<TermParameterBo>();
                 for (Map.Entry<String, String> entry : propositionBo.getTermParameters().entrySet()) {
@@ -339,7 +339,7 @@ public class AgendaEditorMaintainable extends MaintainableImpl {
                     param.setName(entry.getKey());
                     param.setValue(entry.getValue());
                     param.setId(KRADServiceLocator.getSequenceAccessorService().getNextAvailableSequenceNumber(
-                            KrmsMaintenanceConstants.Sequences.TERM_PARAMETER).toString());
+                            KrmsMaintenanceConstants.Sequences.TERM_PARAMETER, TermParameterBo.class).toString());
 
                     params.add(param);
                 }
@@ -407,6 +407,16 @@ public class AgendaEditorMaintainable extends MaintainableImpl {
     @Override
     public Class getDataObjectClass() {
         return AgendaBo.class;
+    }
+
+    @Override
+    public boolean isLockable() {
+        return true;
+    }
+
+    @Override
+    public PersistableBusinessObject getPersistableBusinessObject() {
+        return ((AgendaEditor) getDataObject()).getAgenda();
     }
 
     @Override

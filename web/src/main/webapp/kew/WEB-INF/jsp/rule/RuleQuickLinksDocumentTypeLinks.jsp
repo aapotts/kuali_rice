@@ -1,6 +1,6 @@
 <%--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@
                         <c:param name="methodToCall" value="start"/>
                         <c:param name="docFormKey" value="88888888"/>
                         <c:param name="documentType.name" value="${documentType.name}"/>
-                        <c:param name="template.name" value="${routeLevel.ruleTemplate.name}"/>
+                        <c:param name="ruleTemplate.name" value="${routeLevel.ruleTemplate.name}"/>
                       </c:url>" target="_blank">Search</a>
                     <c:if test="${routeLevel.ruleTemplate.delegationTemplate != null}">
                       &nbsp;

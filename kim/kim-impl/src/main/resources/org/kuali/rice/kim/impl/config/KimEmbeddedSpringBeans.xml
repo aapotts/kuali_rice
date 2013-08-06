@@ -1,6 +1,6 @@
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -162,7 +162,7 @@
         p:namespaceRequiredOnStoredMap="true"/>
 
   <bean id="groupPermissionTypeService"
-        class="org.kuali.rice.krad.kim.NamespaceWildcardAllowedAndOrStringExactMatchPermissionTypeServiceImpl"
+        class="org.kuali.rice.krad.kim.PopulateGroupPermissionTypeServiceImpl"
         p:exactMatchStringAttributeName="groupName"
         p:namespaceRequiredOnStoredMap="true"/>
 
@@ -184,6 +184,11 @@
   <bean id="rice.kim.import.persistenceServiceOjb"
         class="org.kuali.rice.krad.config.GlobalResourceLoaderServiceFactoryBean"
         p:serviceName="persistenceServiceOjb"/>
+
+  <bean id="uiDocumentServiceDAO" class="org.kuali.rice.kim.service.dao.impl.UiDocumentServiceDAOJdbcImpl"
+        lazy-init="true">
+    <property name="dataSource" ref="kimDataSource"/>
+  </bean>
 
   <bean id="kimModuleConfiguration-parentBean" class="org.kuali.rice.krad.bo.ModuleConfiguration" abstract="true"
         p:namespaceCode="KR-IDM"
@@ -294,8 +299,30 @@
     </property>
   </bean>
 
+  <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+    <property name="interceptorNames">
+      <list>
+        <idref bean="matchAllTxInterceptor" />
+      </list>
+    </property>
+    <property name="beanNames">
+      <list>
+        <idref local="kimIdentityDelegateService" />
+        <idref local="kimIdentityArchiveService" />
+        <idref local="kimIdentityService" />
+        <idref local="kimRoleService" />
+        <idref local="kimRoleInternalService" />
+        <idref local="kimGroupService" />
+        <idref local="kimPermissionService" />
+        <idref local="kimResponsibilityService" />
+      </list>
+    </property>
+  </bean>
+
   <bean id="kimModule" class="org.kuali.rice.kim.service.impl.KimModuleService"
         p:moduleConfiguration-ref="kimModuleConfiguration"
         p:kualiModuleService-ref="rice.kim.import.kualiModuleService"/>
 
 </beans>
+
+

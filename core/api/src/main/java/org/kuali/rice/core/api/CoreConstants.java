@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,12 @@ public final class CoreConstants {
     	 * This constant value should never be changed!  If it is changed then it will break compatibility with legacy clients.
     	 */
     	public static final String VERSION_2_0 = "v2_0";
+
+        /**
+         *  Name for complete version 2.1.2 of Kuali Rice which is used to compare against the version of callback services to ensure
+         *  that backwards compatibility is not broken
+         */
+        public static final String VERSION_2_1_2 = "2.1.2";
     	
     }
     

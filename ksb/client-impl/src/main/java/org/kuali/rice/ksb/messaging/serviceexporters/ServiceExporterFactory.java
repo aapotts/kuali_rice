@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,14 @@ import org.kuali.rice.ksb.api.bus.support.SoapServiceDefinition;
  */
 public class ServiceExporterFactory {
 
-	public static ServiceExporter getServiceExporter(ServiceDefinition serviceDefinition, Bus cxfBus, ServerRegistry cxfServerRegistry) {
+	public static ServiceExporter getServiceExporter(ServiceDefinition serviceDefinition, Bus cxfBus) {
 		
 		if (serviceDefinition instanceof JavaServiceDefinition) {
 			return new HttpInvokerServiceExporter();
 		} else if (serviceDefinition instanceof SoapServiceDefinition) {
-			return new SOAPServiceExporter((SoapServiceDefinition)serviceDefinition, cxfBus, cxfServerRegistry);
+			return new SOAPServiceExporter((SoapServiceDefinition)serviceDefinition, cxfBus);
 		} else if (serviceDefinition instanceof RestServiceDefinition) {
-			return new RESTServiceExporter((RestServiceDefinition)serviceDefinition, cxfBus, cxfServerRegistry);
+			return new RESTServiceExporter((RestServiceDefinition)serviceDefinition, cxfBus);
 		}
 		
 		throw new IllegalArgumentException("ServiceDefinition type not supported " + serviceDefinition);

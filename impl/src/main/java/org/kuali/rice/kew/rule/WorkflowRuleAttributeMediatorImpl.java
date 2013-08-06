@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,31 @@ public class WorkflowRuleAttributeMediatorImpl implements WorkflowRuleAttributeM
         ExtensionDefinition extensionDefinition = ruleTemplateAttribute.getRuleAttribute();
         WorkflowRuleAttributeHandlerService handler = getHandler(extensionDefinition);
         WorkflowRuleAttributeFields fields = handler.getRuleFields(parameters, extensionDefinition, ruleTemplateAttribute.isRequired());
+        return new WorkflowRuleAttributeRows(fields);
+    }
+    
+    @Override
+    public WorkflowRuleAttributeRows getRoutingDataRows(Map<String, String> parameters, RuleTemplateAttributeBo ruleTemplateAttribute) {
+        required(ruleTemplateAttribute, "ruleTemplateAttribute");
+        if (parameters == null) {
+            parameters = Collections.emptyMap();
+        }
+        RuleAttribute ruleAttribute = ruleTemplateAttribute.getRuleAttribute();
+        ExtensionDefinition extensionDefinition = RuleAttribute.to(ruleAttribute);
+        WorkflowRuleAttributeHandlerService handler = getHandler(extensionDefinition);
+        WorkflowRuleAttributeFields fields = handler.getRoutingDataFields(parameters, extensionDefinition, ruleTemplateAttribute.isRequired());
+        return new WorkflowRuleAttributeRows(fields);
+    }
+    
+    @Override
+    public WorkflowRuleAttributeRows getRoutingDataRows(Map<String, String> parameters, RuleTemplateAttribute ruleTemplateAttribute) {
+        required(ruleTemplateAttribute, "ruleTemplateAttribute");
+        if (parameters == null) {
+            parameters = Collections.emptyMap();
+        }
+        ExtensionDefinition extensionDefinition = ruleTemplateAttribute.getRuleAttribute();
+        WorkflowRuleAttributeHandlerService handler = getHandler(extensionDefinition);
+        WorkflowRuleAttributeFields fields = handler.getRoutingDataFields(parameters, extensionDefinition, ruleTemplateAttribute.isRequired());
         return new WorkflowRuleAttributeRows(fields);
     }
 

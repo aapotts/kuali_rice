@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,4 +82,22 @@ public interface DocumentSearchService {
     DocumentSearchGenerator getStandardDocumentSearchGenerator();
 
     void validateDocumentSearchCriteria(DocumentSearchGenerator docSearchGenerator, DocumentSearchCriteria.Builder criteria);
+
+    /**
+     * Returns the maximum number of results that should be returned from the document search.
+     *
+     * @param criteria the criteria in which to check for a max results value
+     * @return the maximum number of results that should be returned from a document search
+     */
+    public int getMaxResultCap(DocumentSearchCriteria criteria);
+
+    /**
+     * Returns the number of results that should be returned from an additional fetch against
+     * the document search.
+     *
+     * Default: {@link org.kuali.rice.kew.docsearch.dao.impl.DocumentSearchDAOJdbcImpl.DEFAULT_FETCH_MORE_ITERATION_LIMIT}
+     * Override: {@link org.kuali.rice.kew.api.KewApiConstants#DOC_SEARCH_FETCH_MORE_ITERATION_LIMIT}
+     * @return int
+     */
+    public int getFetchMoreIterationLimit();
 }

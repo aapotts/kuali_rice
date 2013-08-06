@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.text.FieldPosition;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +41,7 @@ import org.kuali.rice.kew.actionitem.ActionItem;
 import org.kuali.rice.kew.actionitem.ActionItemActionListExtension;
 import org.kuali.rice.kew.actionlist.service.ActionListService;
 import org.kuali.rice.kew.actionrequest.ActionRequestValue;
+import org.kuali.rice.kew.actiontaken.ActionTakenValue;
 import org.kuali.rice.kew.api.KewApiConstants;
 import org.kuali.rice.kew.api.KewApiServiceLocator;
 import org.kuali.rice.kew.api.action.ActionItemContract;
@@ -150,6 +153,18 @@ public class ActionListEmailServiceImpl implements ActionListEmailService {
         return new EmailFrom(getDocumentTypeEmailAddress(documentType));
     }
 
+    protected EmailTo getEmailTo(Person user) {
+        String address = user.getEmailAddressUnmasked();
+        if (!isProduction()) {
+            LOG.info("If this were production, email would be sent to "+ user.getEmailAddressUnmasked());
+            address = CoreFrameworkServiceLocator.getParameterService().getParameterValueAsString(
+                KewApiConstants.KEW_NAMESPACE,
+                KRADConstants.DetailTypes.ACTION_LIST_DETAIL_TYPE,
+                KewApiConstants.ACTIONLIST_EMAIL_TEST_ADDRESS);
+        }
+        return new EmailTo(address);
+    }
+
     protected void sendEmail(Person user, EmailSubject subject,
             EmailBody body) {
         sendEmail(user, subject, body, null);
@@ -158,23 +173,12 @@ public class ActionListEmailServiceImpl implements ActionListEmailService {
     protected void sendEmail(Person user, EmailSubject subject,
             EmailBody body, DocumentType documentType) {
         try {
-            if (isProduction()) {
+            if (StringUtils.isNotBlank(user.getEmailAddressUnmasked())) {
                 mailer.sendEmail(getEmailFrom(documentType),
-                        new EmailTo(user.getEmailAddressUnmasked()),
-                        subject,
-                        body,
-                        false);
-            } else {
-                LOG.info("If this were production, email would be sent to "+ user.getEmailAddressUnmasked());
-                mailer.sendEmail(
-                        getEmailFrom(documentType),
-                        new EmailTo(CoreFrameworkServiceLocator.getParameterService().getParameterValueAsString(
-                                KewApiConstants.KEW_NAMESPACE,
-                                KRADConstants.DetailTypes.ACTION_LIST_DETAIL_TYPE,
-                                KewApiConstants.ACTIONLIST_EMAIL_TEST_ADDRESS)),
-                        subject,
-                        body,
-                        false);
+                    getEmailTo(user),
+                    subject,
+                    body,
+                    false);
             }
         } catch (Exception e) {
             LOG.error("Error sending Action List email to " + user.getEmailAddressUnmasked(), e);
@@ -196,10 +200,12 @@ public class ActionListEmailServiceImpl implements ActionListEmailService {
     protected boolean checkEmailNotificationPreferences(ActionItemContract actionItem, Preferences preferences, String emailSetting) {
         boolean shouldSend = true;
         // Check the user's primary and secondary delegation email preferences
-        if (KimConstants.KimUIConstants.DELEGATION_PRIMARY.equals(actionItem.getDelegationType())) {
-            shouldSend = KewApiConstants.PREFERENCES_YES_VAL.equals(preferences.getNotifyPrimaryDelegation());
-        } else if (KimConstants.KimUIConstants.DELEGATION_SECONDARY.equals(actionItem.getDelegationType())) {
-            shouldSend = KewApiConstants.PREFERENCES_YES_VAL.equals(preferences.getNotifySecondaryDelegation());
+        if (actionItem.getDelegationType() != null) {
+            if (KimConstants.KimUIConstants.DELEGATION_PRIMARY.equalsIgnoreCase(actionItem.getDelegationType().getCode())) {
+                shouldSend = KewApiConstants.PREFERENCES_YES_VAL.equals(preferences.getNotifyPrimaryDelegation());
+            } else if (KimConstants.KimUIConstants.DELEGATION_SECONDARY.equalsIgnoreCase(actionItem.getDelegationType().getCode())) {
+                shouldSend = KewApiConstants.PREFERENCES_YES_VAL.equals(preferences.getNotifySecondaryDelegation());
+            }
         }
         if(!shouldSend) {
             // If the action item has a delegation type and the user's
@@ -219,8 +225,50 @@ public class ActionListEmailServiceImpl implements ActionListEmailService {
                                                (StringUtils.equals(actionItem.getActionRequestCd(), KewApiConstants.ACTION_REQUEST_FYI_REQ) && 
                                                 StringUtils.equals(preferences.getNotifyFYI(), KewApiConstants.PREFERENCES_YES_VAL)));
 
-        DocumentType documentType = KEWServiceLocator.getRouteHeaderService().getRouteHeader(actionItem.getDocumentId()).getDocumentType();
-        
+        DocumentRouteHeaderValue document =  KEWServiceLocator.getRouteHeaderService().getRouteHeader(actionItem.getDocumentId());
+        DocumentType documentType = null;
+        Boolean suppressImmediateEmailsOnSuActionPolicy = false;
+        if (document != null) {
+            documentType = document.getDocumentType();
+            suppressImmediateEmailsOnSuActionPolicy = documentType.getSuppressImmediateEmailsOnSuActionPolicy().getPolicyValue();
+        }
+
+        if (suppressImmediateEmailsOnSuActionPolicy) {
+            String docId = actionItem.getDocumentId();
+            LOG.warn("checkEmailNotificationPreferences processing document: " + docId + " of type: " + documentType.getName() + " and getSuppressImmediateEmailsOnSuActionPolicy set to true.");
+
+            List<ActionTakenValue> actionsTaken = document.getActionsTaken();
+            if (actionsTaken != null && actionsTaken.size() > 0) {
+                Collections.sort(actionsTaken, new Comparator<ActionTakenValue>() {
+
+                    @Override
+                    // Sort by date in descending order
+                    public int compare(ActionTakenValue o1, ActionTakenValue o2) {
+                        if (o1 == null && o2 == null)
+                            return 0;
+                        if (o1 == null)
+                            return -1;
+                        if (o2 == null)
+                            return 1;
+
+                        if (o1.getActionDate() == null && o2.getActionDate() == null)
+                            return 0;
+                        if (o1.getActionDate() == null)
+                            return -1;
+                        if (o2.getActionDate() == null)
+                            return 1;
+
+                        return o2.getActionDate().compareTo(o1.getActionDate());
+                    }
+                });
+            }
+
+            ActionTakenValue mostRecentActionTaken = (ActionTakenValue) actionsTaken.get(0);
+            if (mostRecentActionTaken !=null && mostRecentActionTaken.isSuperUserAction()) {
+                return false;
+            }
+        }
+
         // If the user has document type notification preferences check them to
         // see if the action item should be included in the email.
         if(preferences.getDocumentTypeNotificationPreferences().size() > 0) {   

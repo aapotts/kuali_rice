@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.kuali.rice.kew.rule.web;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -49,6 +50,8 @@ import org.kuali.rice.krad.util.KRADConstants;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -168,9 +171,19 @@ public class RuleQuickLinksAction extends KewKualiAction {
 						flattenedNodes.add( new RouteNodeForDisplay( routeNode ) );
 					}
 				}
+                Collections.sort(flattenedNodes,new Comparator() {
+                    public int compare(Object o1, Object o2) {
+                        return ( ((RouteNode)o1).getRouteNodeName().compareTo(((RouteNode)o2).getRouteNodeName()));
+                    }
+                });
 				for ( Iterator<DocumentType> iter = documentType.getChildrenDocTypes().iterator(); iter.hasNext(); ) {
 					childrenDocumentTypes.add( new DocumentTypeQuickLinksStructure( iter.next() ) );
 				}
+                Collections.sort(childrenDocumentTypes,new Comparator() {
+                    public int compare(Object o1, Object o2) {
+                         return ( ((DocumentTypeQuickLinksStructure)o1).documentType.getLabel().compareTo(((DocumentTypeQuickLinksStructure)o2).documentType.getLabel()));
+                    }
+                });
 			}
 		}
 
@@ -328,11 +341,28 @@ public class RuleQuickLinksAction extends KewKualiAction {
                     equal("template.namespaceCode", KRADConstants.KUALI_RICE_WORKFLOW_NAMESPACE),
                     equal("template.name", KewApiConstants.DEFAULT_RESPONSIBILITY_TEMPLATE_NAME),
                     equal("active", "Y"),
-                    equal("attributes[documentTypeName]", getDocumentType().getName()),
-                    equal("attributes[routeNodeName]", getRouteNodeName())
+                    equal("attributes[documentTypeName]", getDocumentType().getName())
+                    // KULRICE-8538 -- Check the route node by looping through the results below.  If it is added
+                    // into the predicate, no rows are ever returned.
+                    // equal("attributes[routeNodeName]", getRouteNodeName())
                 );
+
+
                 builder.setPredicates(p);
- 				responsibilities = KimApiServiceLocator.getResponsibilityService().findResponsibilities(builder.build()).getResults();
+
+                List<Responsibility> possibleResponsibilities =
+                    KimApiServiceLocator.getResponsibilityService().findResponsibilities(builder.build()).getResults();
+
+                if ( !possibleResponsibilities.isEmpty() ) {
+                    for ( Responsibility resp : possibleResponsibilities ) {
+                        String routeNodeName = resp.getAttributes().get( KimConstants.AttributeConstants.ROUTE_NODE_NAME);
+                        if (StringUtils.isNotEmpty(routeNodeName) && StringUtils.equals(routeNodeName, getRouteNodeName())){
+                             responsibilities.add(resp);
+                        }
+                    }
+                } else {
+                    responsibilities = possibleResponsibilities;
+                }
 			}
 			return responsibilities;
 		}

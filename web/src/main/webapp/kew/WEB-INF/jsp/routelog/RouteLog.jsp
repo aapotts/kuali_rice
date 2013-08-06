@@ -1,6 +1,6 @@
 <%--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -154,9 +154,17 @@
                                     &nbsp;
                                 </td>
                                 <td align="left" class="headercell4">
-                                    <c:if test="${actionTaken.forDelegator}">
+                                  <c:choose>
+                                    <c:when test="${not empty actionTaken.delegatorPrincipalId}">
                                         <kul:inquiry boClassName="org.kuali.rice.kim.api.identity.Person" keyValues="principalId=${actionTaken.delegatorPrincipalId}" render="true"><c:out value="${actionTaken.delegatorDisplayName}" /></kul:inquiry>
-                                     </c:if>&nbsp;
+                                    </c:when>
+                                    <c:when test="${not empty actionTaken.delegatorGroupId}">
+                                        <kul:inquiry boClassName="org.kuali.rice.kim.framework.group.GroupEbo" keyValues="id=${actionTaken.delegatorGroupId}" render="true"><c:out value="${actionTaken.delegatorDisplayName}" /></kul:inquiry>
+                                    </c:when>
+                                    <c:when test="${not empty actionTaken.delegatorRoleId}">
+                                        <kul:inquiry boClassName="org.kuali.rice.kim.framework.role.RoleEbo" keyValues="id=${actionTaken.delegatorRoleId}" render="true"><c:out value="${actionTaken.delegatorDisplayName}" /></kul:inquiry>
+                                    </c:when>
+                                  </c:choose>&nbsp;
                                  </td>
                                  <td align="center" class="headercell4">
                                      <b><fmt:formatDate type="date" value="${actionTaken.actionDate}" pattern="${RiceConstants.DEFAULT_DATE_FORMAT_PATTERN}" /></b>

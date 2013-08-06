@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.kuali.rice.kns.maintenance;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
+import org.kuali.rice.core.api.CoreApiServiceLocator;
 import org.kuali.rice.core.api.encryption.EncryptionService;
 import org.kuali.rice.core.web.format.FormatException;
 import org.kuali.rice.kim.api.identity.PersonService;
@@ -159,17 +160,20 @@ public class KualiMaintainableImpl extends MaintainableImpl implements Maintaina
 
 						// take off the postfix
 						encryptedValue = StringUtils.stripEnd(encryptedValue, EncryptionService.ENCRYPTION_POST_PREFIX);
-						String decryptedValue = getEncryptionService().decrypt(encryptedValue);
+                        if(CoreApiServiceLocator.getEncryptionService().isEnabled()) {
+                            String decryptedValue = getEncryptionService().decrypt(encryptedValue);
 
-						fieldValues.put(fieldName, decryptedValue);
+						    fieldValues.put(fieldName, decryptedValue);
+                        }
 					}
 					else
 						throw new RuntimeException("The field value for field name " + fieldName
 								+ " should not be encrypted.");
 				}
 				else if (fieldValue != null && !"".equals(fieldValue)
-						&& shouldFieldBeEncrypted(maintenanceDocument, fieldName, auths, methodToCall))
-					throw new RuntimeException("The field value for field name " + fieldName + " should be encrypted.");
+				    && auths.hasRestriction(fieldName)
+				    && shouldFieldBeEncrypted(maintenanceDocument, fieldName, auths, methodToCall))
+					    throw new RuntimeException("The field value for field name " + fieldName + " should be encrypted.");
 			}
 		}
 		catch (GeneralSecurityException e) {
@@ -383,42 +387,47 @@ public class KualiMaintainableImpl extends MaintainableImpl implements Maintaina
 					else if (ObjectUtils.isNestedAttribute(reference)) {
 						Object nestedObject = ObjectUtils.getNestedValue(getBusinessObject(),
 								ObjectUtils.getNestedAttributePrefix(reference));
-						if (nestedObject instanceof Collection) {
-							// do nothing, probably because it's not really a
-							// collection reference but a relationship defined
-							// in the DD for a collections lookup
-							// this part will need to be rewritten when the DD
-							// supports true collection references
-						}
-						else if (nestedObject instanceof PersistableBusinessObject) {
-							String propertyToRefresh = ObjectUtils.getNestedAttributePrimitive(reference);
-							if (persistenceStructureService.hasReference(nestedObject.getClass(), propertyToRefresh)
-									|| persistenceStructureService.hasCollection(nestedObject.getClass(),
-											propertyToRefresh)) {
-								if (LOG.isDebugEnabled()) {
-									LOG.debug("Refeshing " + ObjectUtils.getNestedAttributePrefix(reference) + " "
-											+ ObjectUtils.getNestedAttributePrimitive(reference));
-								}
-								((PersistableBusinessObject) nestedObject).refreshReferenceObject(propertyToRefresh);
-							}
-							else {
-								// a DD mapping, try to go straight to the
-								// object and refresh it there
-								Object possibleBO = ObjectUtils.getPropertyValue(nestedObject, propertyToRefresh);
-								if (possibleBO != null && possibleBO instanceof PersistableBusinessObject) {
-									if (getDataDictionaryService().hasRelationship(possibleBO.getClass().getName(),
-											propertyToRefresh)) {
-										((PersistableBusinessObject) possibleBO).refresh();
-									}
-								}
-							}
-						}
-						else {
-							LOG.warn("Expected that a referenceToRefresh ("
-									+ reference
-									+ ")  would be a PersistableBusinessObject or Collection, but instead, it was of class "
-									+ nestedObject.getClass().getName());
-						}
+                        if (nestedObject == null) {
+                            LOG.warn("Unable to refresh ReferenceToRefresh (" + reference + ")  was found to be null");
+                        }
+                        else {
+                            if (nestedObject instanceof Collection) {
+                                // do nothing, probably because it's not really a
+                                // collection reference but a relationship defined
+                                // in the DD for a collections lookup
+                                // this part will need to be rewritten when the DD
+                                // supports true collection references
+                            }
+                            else if (nestedObject instanceof PersistableBusinessObject) {
+                                String propertyToRefresh = ObjectUtils.getNestedAttributePrimitive(reference);
+                                if (persistenceStructureService.hasReference(nestedObject.getClass(), propertyToRefresh)
+                                        || persistenceStructureService.hasCollection(nestedObject.getClass(),
+                                                propertyToRefresh)) {
+                                    if (LOG.isDebugEnabled()) {
+                                        LOG.debug("Refeshing " + ObjectUtils.getNestedAttributePrefix(reference) + " "
+                                                + ObjectUtils.getNestedAttributePrimitive(reference));
+                                    }
+                                    ((PersistableBusinessObject) nestedObject).refreshReferenceObject(propertyToRefresh);
+                                }
+                                else {
+                                    // a DD mapping, try to go straight to the
+                                    // object and refresh it there
+                                    Object possibleBO = ObjectUtils.getPropertyValue(nestedObject, propertyToRefresh);
+                                    if (possibleBO != null && possibleBO instanceof PersistableBusinessObject) {
+                                        if (getDataDictionaryService().hasRelationship(possibleBO.getClass().getName(),
+                                                propertyToRefresh)) {
+                                            ((PersistableBusinessObject) possibleBO).refresh();
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                LOG.warn("Expected that a referenceToRefresh ("
+                                        + reference
+                                        + ")  would be a PersistableBusinessObject or Collection, but instead, it was of class "
+                                        + nestedObject.getClass().getName());
+                            }
+                        }
 					}
 					else {
 						if (LOG.isDebugEnabled()) {

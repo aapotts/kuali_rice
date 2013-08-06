@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
   <parent>
     <artifactId>rice-it</artifactId>
     <groupId>org.kuali.rice</groupId>
-    <version>2.1.1.0-rsmart-SNAPSHOT</version>
+    <version>2.1.7</version>
   </parent>
   <artifactId>rice-it-remote</artifactId>
   <name>Rice Integration Test Remote</name>
@@ -35,33 +35,33 @@
 
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>2.1.1</version>
+      <version>${project.version}</version>
       <artifactId>rice-core-impl</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>2.1.1</version>
+      <version>${project.version}</version>
       <artifactId>rice-core-impl</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>2.1.1</version>
+      <version>${project.version}</version>
       <artifactId>rice-core-service-impl</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>2.1.1</version>
+      <version>${project.version}</version>
       <artifactId>rice-core-service-impl</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>2.1.1</version>
+      <version>${project.version}</version>
       <artifactId>rice-kim-impl</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
@@ -74,7 +74,7 @@
     </dependency>
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>2.1.1</version>
+      <version>${project.version}</version>
       <artifactId>rice-impl</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
@@ -87,7 +87,7 @@
     </dependency>
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>2.1.1</version>
+      <version>${project.version}</version>
       <artifactId>rice-ksb-server-impl</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
@@ -100,7 +100,7 @@
     </dependency>
     <dependency>
       <groupId>org.kuali.rice</groupId>
-      <version>2.1.1</version>
+      <version>${project.version}</version>
       <artifactId>rice-krms-impl</artifactId>
       <scope>test</scope>
       <type>test-jar</type>
@@ -115,20 +115,6 @@
       <groupId>org.kuali.rice</groupId>
       <version>${project.version}</version>
       <artifactId>rice-it-internal-tools</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-server</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-deploy</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-webapp</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -150,6 +136,11 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-transports-http-jetty</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
     </dependency>
   </dependencies>
 </project>

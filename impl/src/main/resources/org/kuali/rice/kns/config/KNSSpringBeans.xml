@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -119,15 +119,7 @@
         </property>
     </bean>
 
-    <bean id="knsSessionDocumentService" class="org.kuali.rice.kns.service.impl.SessionDocumentServiceImpl">
-		<property name="maxCacheSize" value="${session.document.cache.size}" />
-		<property name="businessObjectService">
-			<ref bean="businessObjectService" />
-		</property>
-		<property name="sessionDocumentDao">
-			<ref bean="sessionDocumentDao" />
-		</property>
-	</bean>
+    <bean id="knsSessionDocumentService" class="org.kuali.rice.kns.service.impl.NoOpSessionDocumentServiceImpl" />
 
     <bean id="knsDictionaryValidationService" class="org.kuali.rice.kns.service.impl.DictionaryValidationServiceImpl">
 		<property name="dataDictionaryService">

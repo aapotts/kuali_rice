@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.kuali.rice.kew.doctype.service;
 
+import org.kuali.rice.kew.engine.node.RouteNodeInstance;
 import org.kuali.rice.kew.doctype.bo.DocumentType;
 import org.kuali.rice.kew.routeheader.DocumentRouteHeaderValue;
 
@@ -33,7 +34,7 @@ public interface DocumentTypePermissionService {
 	 * Determines if the given principal is authorized to receive ad hoc requests
 	 * for the given DocumentType and action request type.
 	 */
-	boolean canReceiveAdHocRequest(String principalId, DocumentType documentType, String actionRequestCode);
+	boolean canReceiveAdHocRequest(String principalId, DocumentRouteHeaderValue document, String actionRequestCode);
 
 	/**
 	 * Determines if the given group is authorized to receive ad hoc requests of the
@@ -41,7 +42,7 @@ public interface DocumentTypePermissionService {
 	 * A group is considered to be authorized to receive an ad hoc request if all
 	 * of it's members can receive the request.
 	 */
-	boolean canGroupReceiveAdHocRequest(String groupId, DocumentType documentType, String actionRequestCode);
+	boolean canGroupReceiveAdHocRequest(String groupId, DocumentRouteHeaderValue document, String actionRequestCode);
 	
 	/**
 	 * Determines if the given principal can administer routing for the given
@@ -49,7 +50,28 @@ public interface DocumentTypePermissionService {
 	 */
 	boolean canAdministerRouting(String principalId, DocumentType documentType);
 
-	/**
+    /**
+     * Determines if the given principal can super user approve a single action
+     * request for a given DocumentType, route node, and routeStatusCode
+     */
+    boolean canSuperUserApproveSingleActionRequest(String principalId, DocumentType documentType,
+            List<RouteNodeInstance> routeNodeInstances, String routeStatusCode);
+
+    /**
+     * Determines if the given principal can super user approve a document
+     * for a given DocumentType, route node, and routeStatusCode
+     */
+    boolean canSuperUserApproveDocument(String principalId, DocumentType documentType,
+            List<RouteNodeInstance> routeNodeInstances, String routeStatusCode);
+
+    /**
+     * Determines if the given principal can super user disapprove a document
+     * for a given DocumentType, route node, and routeStatusCode
+     */
+    boolean canSuperUserDisapproveDocument(String principalId, DocumentType documentType,
+            List<RouteNodeInstance> routeNodeInstances, String routeStatusCode);
+
+    /**
 	 * Determines if the given principal can initiate documents of the given DocumentType.
 	 */
 	boolean canInitiate(String principalId, DocumentType documentType);
@@ -68,13 +90,13 @@ public interface DocumentTypePermissionService {
 	 * For example, if the save permission is defined for node 1 but not for node 2, then a document which
 	 * is at both node 1 and node 2 should satisfy the permission check.
 	 */
-	boolean canSave(String principalId, String documentId, DocumentType documentType, List<String> routeNodeNames, String documentStatus, String initiatorPrincipalId);
+	boolean canSave(String principalId, DocumentRouteHeaderValue document);
 
 	/**
 	 * Determines if the given principal can blanket approve documents of the given DocumentType.  The permission check
 	 * also considers the document status and the initiator of the document.
 	 */
-	boolean canBlanketApprove(String principalId, DocumentType documentType, String documentStatus, String initiatorPrincipalId);
+	boolean canBlanketApprove(String principalId, DocumentRouteHeaderValue document);
 
 	/**
 	 * Determines if the given principal can cancel documents of the given DocumentType.  The permission check
@@ -84,7 +106,7 @@ public interface DocumentTypePermissionService {
 	 * For example, if the cancel permission is defined for node 1 but not for node 2, then a document which
 	 * is at both node 1 and node 2 should satisfy the permission check.
 	 */
-	boolean canCancel(String principalId, String documentId, DocumentType documentType, List<String> routeNodeNames, String documentStatus, String initiatorPrincipalId);
+	boolean canCancel(String principalId, DocumentRouteHeaderValue document);
 	
 	/**
 	 * Determines if the given principal can add route log messages for documents of the given DocumentRouteHeaderValue.  The permission check
@@ -96,6 +118,6 @@ public interface DocumentTypePermissionService {
      * Determines if the given principal can recall the specified document given the permission details.
      * @since 2.1
      */
-    boolean canRecall(String principalId, String documentId, DocumentType documentType, List<String> routeNodeNames, String documentStatus, String applicationStatus, String initiatorPrincipalId);
+    boolean canRecall(String principalId, DocumentRouteHeaderValue document);
 
 }

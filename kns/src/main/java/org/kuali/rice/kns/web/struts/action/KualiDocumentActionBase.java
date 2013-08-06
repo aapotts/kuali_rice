@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ import org.kuali.rice.kns.web.struts.form.KualiDocumentFormBase;
 import org.kuali.rice.kns.web.struts.form.KualiForm;
 import org.kuali.rice.kns.web.struts.form.KualiMaintenanceForm;
 import org.kuali.rice.krad.UserSession;
+import org.kuali.rice.krad.UserSessionUtils;
 import org.kuali.rice.krad.bo.AdHocRoutePerson;
 import org.kuali.rice.krad.bo.AdHocRouteRecipient;
 import org.kuali.rice.krad.bo.AdHocRouteWorkgroup;
@@ -82,6 +83,7 @@ import org.kuali.rice.krad.exception.UnknownDocumentIdException;
 import org.kuali.rice.krad.rules.rule.event.AddAdHocRoutePersonEvent;
 import org.kuali.rice.krad.rules.rule.event.AddAdHocRouteWorkgroupEvent;
 import org.kuali.rice.krad.rules.rule.event.AddNoteEvent;
+import org.kuali.rice.krad.rules.rule.event.RouteDocumentEvent;
 import org.kuali.rice.krad.rules.rule.event.SendAdHocRequestsEvent;
 import org.kuali.rice.krad.service.AttachmentService;
 import org.kuali.rice.krad.service.BusinessObjectService;
@@ -343,6 +345,14 @@ public class KualiDocumentActionBase extends KualiAction {
         KualiDocumentFormBase kualiDocumentFormBase = (KualiDocumentFormBase) form;
         String command = kualiDocumentFormBase.getCommand();
 
+        if (kualiDocumentFormBase.getDocId()!= null && getDocumentService().getByDocumentHeaderId(kualiDocumentFormBase.getDocId()) == null) {
+            ConfigurationService kualiConfigurationService = KRADServiceLocator.getKualiConfigurationService();
+            StringBuffer sb = new StringBuffer();
+            sb.append(kualiConfigurationService.getPropertyValueAsString(KRADConstants.KRAD_URL_KEY));
+            sb.append(kualiConfigurationService.getPropertyValueAsString(KRADConstants.KRAD_INITIATED_DOCUMENT_URL_KEY));
+            response.sendRedirect(sb.toString());
+            return new ActionForward(KRADConstants.KRAD_INITIATED_DOCUMENT_VIEW_NAME, sb.toString() ,true);
+        }
         // in all of the following cases we want to load the document
         if (ArrayUtils.contains(DOCUMENT_LOAD_COMMANDS, command) && kualiDocumentFormBase.getDocId() != null) {
             loadDocument(kualiDocumentFormBase);
@@ -350,7 +360,7 @@ public class KualiDocumentActionBase extends KualiAction {
             createDocument(kualiDocumentFormBase);
         } else {
             LOG.error("docHandler called with invalid parameters");
-            throw new IllegalStateException("docHandler called with invalid parameters");
+            throw new IllegalArgumentException("docHandler called with invalid parameters");
         }
 
         // attach any extra JS from the data dictionary
@@ -393,8 +403,9 @@ public class KualiDocumentActionBase extends KualiAction {
         kualiDocumentFormBase.setDocument(doc);
         WorkflowDocument workflowDoc = doc.getDocumentHeader().getWorkflowDocument();
         kualiDocumentFormBase.setDocTypeName(workflowDoc.getDocumentTypeName());
+
         // KualiDocumentFormBase.populate() needs this updated in the session
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(), workflowDoc);
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(), workflowDoc);
     }
 
 
@@ -407,6 +418,8 @@ public class KualiDocumentActionBase extends KualiAction {
      */
     protected void createDocument(KualiDocumentFormBase kualiDocumentFormBase) throws WorkflowException {
         Document doc = getDocumentService().getNewDocument(kualiDocumentFormBase.getDocTypeName());
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
+                doc.getDocumentHeader().getWorkflowDocument());
 
         kualiDocumentFormBase.setDocument(doc);
         kualiDocumentFormBase.setDocTypeName(doc.getDocumentHeader().getWorkflowDocument().getDocumentTypeName());
@@ -820,6 +833,14 @@ public class KualiDocumentActionBase extends KualiAction {
         KualiDocumentFormBase kualiDocumentFormBase = (KualiDocumentFormBase) form;
         doProcessingAfterPost(kualiDocumentFormBase, request);
 
+        // KULRICE-7864: blanket approve should not be allowed when adhoc route for completion request is newly added 
+        boolean hasPendingAdhocForCompletion = this.hasPendingAdhocForCompletion(kualiDocumentFormBase);
+        if(hasPendingAdhocForCompletion){
+            GlobalVariables.getMessageMap().putError(KRADConstants.NEW_AD_HOC_ROUTE_WORKGROUP_PROPERTY_NAME, RiceKeyConstants.ERROR_ADHOC_COMPLETE_BLANKET_APPROVE_NOT_ALLOWED);
+            
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        }
+        
         kualiDocumentFormBase.setDerivedValuesOnForm(request);
         ActionForward preRulesForward = promptBeforeValidation(mapping, form, request, response);
         if (preRulesForward != null) {
@@ -1164,7 +1185,7 @@ public class KualiDocumentActionBase extends KualiAction {
             if (parameterName.equals("newAdHocRouteWorkgroup.recipientName") && !"".equals(request.getParameter(parameterName))) {
                 //check for namespace
                 String namespace = KimConstants.KIM_GROUP_DEFAULT_NAMESPACE_CODE;
-                if (request.getParameter("newAdHocRouteWorkgroup.recipientNamespaceCode") != null && !"".equals(request.getParameter("newAdHocRouteWorkgroup.recipientName").trim())) {
+                if (request.getParameter("newAdHocRouteWorkgroup.recipientNamespaceCode") != null && !"".equals(request.getParameter("newAdHocRouteWorkgroup.recipientNamespaceCode").trim())) {
                     namespace = request.getParameter("newAdHocRouteWorkgroup.recipientNamespaceCode").trim();
                 }
                 Group group = getGroupService().getGroupByNamespaceCodeAndName(namespace, request.getParameter(
@@ -1174,7 +1195,8 @@ public class KualiDocumentActionBase extends KualiAction {
                     kualiForm.getNewAdHocRouteWorkgroup().setRecipientName(group.getName());
                     kualiForm.getNewAdHocRouteWorkgroup().setRecipientNamespaceCode(group.getNamespaceCode());
                 } else {
-                    throw new RuntimeException("Invalid workgroup id passed as parameter.");
+                    GlobalVariables.getMessageMap().putError("newAdHocRouteWorkgroup.recipientNamespaceCode", RiceKeyConstants.ERROR_INVALID_ADHOC_WORKGROUP_NAMESPACECODE);
+                    return;
                 }
             }
             if (parameterName.startsWith("adHocRouteWorkgroup[") && !"".equals(request.getParameter(parameterName))) {
@@ -1193,7 +1215,8 @@ public class KualiDocumentActionBase extends KualiAction {
                         kualiForm.getAdHocRouteWorkgroup(lineNumber).setRecipientName(group.getName());
                         kualiForm.getAdHocRouteWorkgroup(lineNumber).setRecipientNamespaceCode(group.getNamespaceCode());
                     } else {
-                        throw new RuntimeException("Invalid workgroup id passed as parameter.");
+                        GlobalVariables.getMessageMap().putError(namespaceParam, RiceKeyConstants.ERROR_INVALID_ADHOC_WORKGROUP_NAMESPACECODE);
+                        return;
                     }
                 }
             }
@@ -2051,28 +2074,37 @@ public class KualiDocumentActionBase extends KualiAction {
             return new Response(question, disapprovalNoteText, buttonClicked);
         }
     }
-    
+
     public ActionForward takeSuperUserActions(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
-    	KualiDocumentFormBase documentForm = (KualiDocumentFormBase)form;
-    	if(StringUtils.isBlank(documentForm.getSuperUserAnnotation())) {
-    		GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.takeactions.annotation.missing", "");
-    		return mapping.findForward(RiceConstants.MAPPING_BASIC);
-    	} else if(documentForm.getSelectedActionRequests().isEmpty()) {
-    		GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.takeactions.none.selected", "");
-    		return mapping.findForward(RiceConstants.MAPPING_BASIC);
-    	}
-    	for(String actionRequestId : documentForm.getSelectedActionRequests()) {
-    		ActionRequest actionRequest = null;
-    		for(ActionRequest pendingActionRequest : documentForm.getActionRequests()) {
-    			if(StringUtils.equals(pendingActionRequest.getId(), actionRequestId)) {
-    				actionRequest = pendingActionRequest;
-    				break;
-    			}
-    		}
-    		if(actionRequest == null) {
-    			// If the action request isn't pending then skip it
-    			continue;
-    		}
+        KualiDocumentFormBase documentForm = (KualiDocumentFormBase)form;
+        if(StringUtils.isBlank(documentForm.getSuperUserAnnotation())) {
+            GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.takeactions.annotation.missing", "");
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        } else if(documentForm.getSelectedActionRequests().isEmpty()) {
+            GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.takeactions.none.selected", "");
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        }  else if (!documentForm.isStateAllowsApproveSingleActionRequest()) {
+            GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.takeactions.not.allowed", "");
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        }
+
+        for(String actionRequestId : documentForm.getSelectedActionRequests()) {
+            ActionRequest actionRequest = null;
+            for(ActionRequest pendingActionRequest : documentForm.getActionRequests()) {
+                if(StringUtils.equals(pendingActionRequest.getId(), actionRequestId)) {
+                    actionRequest = pendingActionRequest;
+                    break;
+                }
+            }
+            if(actionRequest == null) {
+                // If the action request isn't pending then skip it
+                continue;
+            }
+            if (StringUtils.equals(actionRequest.getActionRequested().getCode(), ActionRequestType.COMPLETE.getCode()) ||
+                StringUtils.equals(actionRequest.getActionRequested().getCode(), ActionRequestType.APPROVE.getCode())) {
+                    getDocumentService().validateAndPersistDocument(documentForm.getDocument(), new RouteDocumentEvent(documentForm.getDocument()));
+            }
+
             WorkflowDocumentActionsService documentActions = getWorkflowDocumentActionsService(documentForm.getWorkflowDocument().getDocumentTypeId());
             DocumentActionParameters parameters = DocumentActionParameters.create(documentForm.getDocId(), GlobalVariables.getUserSession().getPrincipalId(), documentForm.getSuperUserAnnotation());
             documentActions.superUserTakeRequestedAction(parameters, true, actionRequestId);
@@ -2089,24 +2121,53 @@ public class KualiDocumentActionBase extends KualiAction {
                 messageString = "general.routing.superuser.actionRequestApproved";
             }
             GlobalVariables.getMessageMap().putInfo("document", messageString, documentForm.getDocId(), actionRequestId);
-            documentForm.setSuperUserAnnotation("");
-    	}
-    	return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        }
+        documentForm.setSuperUserAnnotation("");
+        return mapping.findForward(RiceConstants.MAPPING_BASIC);
     }
-    
+
     public ActionForward superUserDisapprove(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
     	KualiDocumentFormBase documentForm = (KualiDocumentFormBase)form;
     	if(StringUtils.isBlank(documentForm.getSuperUserAnnotation())) {
     		GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.disapprove.annotation.missing", "");
     		return mapping.findForward(RiceConstants.MAPPING_BASIC);
-    	}
+    	} else if (!documentForm.getSelectedActionRequests().isEmpty()) {
+            GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.disapprove.when.actions.checked", "");
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        } else if (!documentForm.isStateAllowsApproveOrDisapprove()) {
+            GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.disapprove.not.allowed", "");
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        }
+
         WorkflowDocumentActionsService documentActions = getWorkflowDocumentActionsService(documentForm.getWorkflowDocument().getDocumentTypeId());
         DocumentActionParameters parameters = DocumentActionParameters.create(documentForm.getDocId(), GlobalVariables.getUserSession().getPrincipalId(), documentForm.getSuperUserAnnotation());
         documentActions.superUserDisapprove(parameters, true);
         GlobalVariables.getMessageMap().putInfo("document", "general.routing.superuser.disapproved", documentForm.getDocId());
-    	return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        documentForm.setSuperUserAnnotation("");
+        return mapping.findForward(RiceConstants.MAPPING_BASIC);
     }
-    
+
+    public ActionForward superUserApprove(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) {
+        KualiDocumentFormBase documentForm = (KualiDocumentFormBase)form;
+        if(StringUtils.isBlank(documentForm.getSuperUserAnnotation())) {
+            GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.approve.annotation.missing", "");
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        } else if (!documentForm.getSelectedActionRequests().isEmpty()) {
+            GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.approve.when.actions.checked", "");
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        } else if (!documentForm.isStateAllowsApproveOrDisapprove()) {
+            GlobalVariables.getMessageMap().putErrorForSectionId("superuser.errors", "superuser.approve.not.allowed", "");
+            return mapping.findForward(RiceConstants.MAPPING_BASIC);
+        }
+
+        WorkflowDocumentActionsService documentActions = getWorkflowDocumentActionsService(documentForm.getWorkflowDocument().getDocumentTypeId());
+        DocumentActionParameters parameters = DocumentActionParameters.create(documentForm.getDocId(), GlobalVariables.getUserSession().getPrincipalId(), documentForm.getSuperUserAnnotation());
+        documentActions.superUserBlanketApprove(parameters, true);
+        GlobalVariables.getMessageMap().putInfo("document", "general.routing.superuser.approved", documentForm.getDocId());
+        documentForm.setSuperUserAnnotation("");
+        return mapping.findForward(RiceConstants.MAPPING_BASIC);
+    }
+
     private WorkflowDocumentActionsService getWorkflowDocumentActionsService(String documentTypeId) {
         DocumentType documentType = KewApiServiceLocator.getDocumentTypeService().getDocumentTypeById(documentTypeId);
         String applicationId = documentType.getApplicationId();
@@ -2147,6 +2208,25 @@ public class KualiDocumentActionBase extends KualiAction {
         kualiDocumentFormBase.setAnnotation("");
 
         return mapping.findForward(RiceConstants.MAPPING_BASIC);
+    }
+    
+    /**
+     * KULRICE-7864: blanket approve should not be allowed when adhoc route for completion request is newly added 
+     * 
+     * determine whether any adhoc recipient in the given document has been just added for completion action
+     */
+    protected boolean hasPendingAdhocForCompletion(KualiDocumentFormBase kualiDocumentFormBase){
+        List<AdHocRouteRecipient> adHocRecipients = this.combineAdHocRecipients(kualiDocumentFormBase);
+        
+        for(AdHocRouteRecipient receipients : adHocRecipients){
+            String actionRequestedCode = receipients.getActionRequested();
+            
+            if(KewApiConstants.ACTION_REQUEST_COMPLETE_REQ.equals(actionRequestedCode)){
+                return true;
+            }
+        }
+        
+        return false;
     }
     
 }

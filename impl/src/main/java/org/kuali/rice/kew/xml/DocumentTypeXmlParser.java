@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ import org.kuali.rice.kew.api.WorkflowRuntimeException;
 import org.kuali.rice.kew.api.exception.InvalidParentDocTypeException;
 import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.kew.doctype.ApplicationDocumentStatus;
+import org.kuali.rice.kew.doctype.ApplicationDocumentStatusCategory;
 import org.kuali.rice.kew.doctype.DocumentTypeAttributeBo;
 import org.kuali.rice.kew.doctype.DocumentTypePolicy;
 import org.kuali.rice.kew.doctype.bo.DocumentType;
 import org.kuali.rice.kew.document.DocumentTypeMaintainable;
 import org.kuali.rice.kew.engine.node.ActivationTypeEnum;
 import org.kuali.rice.kew.engine.node.BranchPrototype;
-import org.kuali.rice.kew.engine.node.NodeJotter;
 import org.kuali.rice.kew.engine.node.NodeType;
 import org.kuali.rice.kew.engine.node.ProcessDefinitionBo;
 import org.kuali.rice.kew.engine.node.RoleNode;
@@ -504,6 +504,19 @@ public class DocumentTypeXmlParser {
             throw xpee;
         }
 
+        // set the DocumentTypeAuthorizer
+        try {
+            if (XmlHelper.pathExists(xpath, "./" + AUTHORIZER, documentTypeNode)) {
+                String authorizer = (String) getXPath().evaluate("./" + AUTHORIZER, documentTypeNode, XPathConstants.STRING);
+                if (StringUtils.isNotBlank(authorizer)) {
+                    documentType.setAuthorizer(authorizer);
+                }
+            }
+        } catch (XPathExpressionException xpee) {
+            LOG.error("Error obtaining document type authorizer", xpee);
+            throw xpee;
+        }
+
         // set the document handler URL on the document type
         try {
             /*
@@ -814,25 +827,12 @@ public class DocumentTypeXmlParser {
             throw xpee;
         }
 
-        // set the valid application document statuses for the document type
-        /*
-         * The following code does not need to apply the isOverwrite mode logic because it already checks to see if each node
-         * is available on the ingested XML. If the node is ingested then it doesn't matter if we're in overwrite mode or not
-         * the ingested code should save.
-         */
-        NodeList appDocStatusList = (NodeList) getXPath().evaluate("./" + APP_DOC_STATUSES, documentTypeNode, XPathConstants.NODESET);
-        if (appDocStatusList.getLength() > 1) {
-            // more than one <validDocumentStatuses> tag is invalid
-            throw new XmlException("More than one " + APP_DOC_STATUSES + " node is present in a document type node");
-        }
-        else if (appDocStatusList.getLength() > 0) {
-            // if there is exactly one <validDocumentStatuses> tag then parse it and use the values
-//        	NodeList statusNodes = appDocStatusList.item(0).getChildNodes();
-            NodeList statusNodes = (NodeList) getXPath().evaluate("./" + STATUS, appDocStatusList.item(0), XPathConstants.NODESET);
-            documentType.setValidApplicationStatuses(getDocumentTypeStatuses(statusNodes, documentType));
-        }
-        
-        
+        // KULRICE-7786: Document Specific Doc Search Application Document Status should be available (and groupable)
+        // on the basic version of search.
+        //
+        // Side-effect: populates the application statuses and categories on the documentType
+        ApplicationDocumentStatusParser.parseValidApplicationStatuses(documentType, documentTypeNode, getXPath());
+
         return documentType;
     }
 
@@ -988,65 +988,109 @@ public class DocumentTypeXmlParser {
             documentType.addProcess(process);
     }
 
+    private RoutePathContext findNodeOnXPath( String nodeName, RoutePathContext context,  Node routePathNode ) throws XPathExpressionException, XmlException {
+        Node currentNode;
+
+        while (context.nodeQName.length() > 1) {
+            context.nodeXPath = context.nodeXPath.substring(0,context.nodeXPath.lastIndexOf("//"));
+            context.nodeQName = context.nodeQName.substring(0,context.nodeQName.lastIndexOf(":", context.nodeQName.lastIndexOf(":")-1)+1);
+            if (StringUtils.isBlank( context.nodeQName)) {
+                context.nodeQName = ":";
+            }
+
+            try {
+                 currentNode = (Node) getXPath().evaluate(context.nodeXPath + "//" + "*[@name = '" + nodeName +"']" , routePathNode, XPathConstants.NODE);
+            } catch (XPathExpressionException xpee) {
+                 LOG.error("Error obtaining routePath for routeNode", xpee);
+                 throw xpee;
+            }
+
+            if (currentNode != null) {
+                 return  context;
+            }
+        }
+
+        return context;
+    }
+
     private RouteNode createRouteNode(RouteNode previousRouteNode, String nodeName, Node routePathNode, Node routeNodesNode, DocumentType documentType, RoutePathContext context) throws XPathExpressionException, XmlException, GroupNotFoundException {
         if (nodeName == null) return null;
 
         Node currentNode;
+        context.nodeXPath += "//" + "*[@name = '" + nodeName +"']";
+        context.nodeQName += nodeName + ":";
+
         try {
-            currentNode = (Node) getXPath().evaluate(".//*[@name = '" + nodeName + "']", routePathNode, XPathConstants.NODE);
+            currentNode = (Node) getXPath().evaluate(context.nodeXPath + "//" + "*[@name = '" + nodeName +"']" , routePathNode, XPathConstants.NODE);
+            if (currentNode == null) {
+                findNodeOnXPath( nodeName, context,  routePathNode );
+                currentNode = (Node) getXPath().evaluate(context.nodeXPath + "//" + "*[@name = '" + nodeName +"']" , routePathNode, XPathConstants.NODE);
+            }
         } catch (XPathExpressionException xpee) {
             LOG.error("Error obtaining routePath for routeNode", xpee);
             throw xpee;
         }
+
         if (currentNode == null) {
             String message = "Next node '" + nodeName + "' for node '" + previousRouteNode.getRouteNodeName() + "' not found!";
             LOG.error(message);
             throw new XmlException(message);
         }
+
+        context.nodeXPath += "//" + "*[@name = '" + nodeName +"']";
+        context.nodeQName += nodeName + ":";
+        LOG.debug("nodeQNme:"+context.nodeQName);
         boolean nodeIsABranch;
+
         try {
             nodeIsABranch = ((Boolean) getXPath().evaluate("self::node()[local-name() = 'branch']", currentNode, XPathConstants.BOOLEAN)).booleanValue();
         } catch (XPathExpressionException xpee) {
             LOG.error("Error testing whether node is a branch", xpee);
             throw xpee;
         }
+
         if (nodeIsABranch) {
             throw new XmlException("Next node cannot be a branch node");
         }
 
         String localName;
+
         try {
             localName = (String) getXPath().evaluate("local-name(.)", currentNode, XPathConstants.STRING);
         } catch (XPathExpressionException xpee) {
             LOG.error("Error obtaining node local-name", xpee);
             throw xpee;
         }
+
         RouteNode currentRouteNode = null;
-        if (nodesMap.containsKey(nodeName)) {
-            currentRouteNode = (RouteNode) nodesMap.get(nodeName);
+
+        if (nodesMap.containsKey(context.nodeQName)) {
+            currentRouteNode = (RouteNode) nodesMap.get(context.nodeQName);
         } else {
             String nodeExpression = ".//*[@name='" + nodeName + "']";
             currentRouteNode = makeRouteNodePrototype(localName, nodeName, nodeExpression, routeNodesNode, documentType, context);
         }
 
         if ("split".equalsIgnoreCase(localName)) {
-            getSplitNextNodes(currentNode, routePathNode, currentRouteNode, routeNodesNode, documentType, context);
+            getSplitNextNodes(currentNode, routePathNode, currentRouteNode, routeNodesNode, documentType,  cloneContext(context));
         }
 
         if (previousRouteNode != null) {
             previousRouteNode.getNextNodes().add(currentRouteNode);
-            nodesMap.put(previousRouteNode.getRouteNodeName(), previousRouteNode);
+            nodesMap.put(context.previousNodeQName, previousRouteNode);
             currentRouteNode.getPreviousNodes().add(previousRouteNode);
         }
 
         String nextNodeName = null;
         boolean hasNextNodeAttrib;
+
         try {
             hasNextNodeAttrib = ((Boolean) getXPath().evaluate(NEXT_NODE_EXP, currentNode, XPathConstants.BOOLEAN)).booleanValue();
         } catch (XPathExpressionException xpee) {
             LOG.error("Error obtaining node nextNode attrib", xpee);
             throw xpee;
         }
+
         if (hasNextNodeAttrib) {
             // if the node has a nextNode but is not a split node, the nextNode is used for its node
             if (!"split".equalsIgnoreCase(localName)) {
@@ -1056,17 +1100,20 @@ public class DocumentTypeXmlParser {
                     LOG.error("Error obtaining node nextNode attrib", xpee);
                     throw xpee;
                 }
-                createRouteNode(currentRouteNode, nextNodeName, routePathNode, routeNodesNode, documentType, context);
+
+                context.previousNodeQName = context.nodeQName;
+                createRouteNode(currentRouteNode, nextNodeName, routePathNode, routeNodesNode, documentType, cloneContext(context));
             } else {
                 // if the node has a nextNode but is a split node, the nextNode must be used for that split node's join node
-                nodesMap.put(currentRouteNode.getRouteNodeName(), currentRouteNode);
+                nodesMap.put(context.nodeQName, currentRouteNode);
             }
+
         } else {
             // if the node has no nextNode of its own and is not a join which gets its nextNode from its parent split node
             if (!"join".equalsIgnoreCase(localName)) {
-                nodesMap.put(currentRouteNode.getRouteNodeName(), currentRouteNode);
-                // if join has a parent nextNode (on its split node) and join has not already walked this path
-            } else {
+                nodesMap.put(context.nodeQName, currentRouteNode);
+
+            } else {    // if join has a parent nextNode (on its split node) and join has not already walked this path
                 boolean parentHasNextNodeAttrib;
                 try {
                     parentHasNextNodeAttrib = ((Boolean) getXPath().evaluate(PARENT_NEXT_NODE_EXP, currentNode, XPathConstants.BOOLEAN)).booleanValue();
@@ -1074,30 +1121,35 @@ public class DocumentTypeXmlParser {
                     LOG.error("Error obtaining parent node nextNode attrib", xpee);
                     throw xpee;
                 }
-                if (parentHasNextNodeAttrib && !nodesMap.containsKey(nodeName)) {
+
+                if (parentHasNextNodeAttrib && !nodesMap.containsKey(context.nodeQName)) {
                     try {
                         nextNodeName = (String) getXPath().evaluate(PARENT_NEXT_NODE_EXP, currentNode, XPathConstants.STRING);
                     } catch (XPathExpressionException xpee) {
                         LOG.error("Error obtaining parent node nextNode attrib", xpee);
                         throw xpee;
                     }
-                    createRouteNode(currentRouteNode, nextNodeName, routePathNode, routeNodesNode, documentType, context);
+
+                    context.previousNodeQName = context.nodeQName;
+                    createRouteNode(currentRouteNode, nextNodeName, routePathNode, routeNodesNode, documentType, cloneContext(context));
                 } else {
                     // if join's parent split node does not have a nextNode
-                    nodesMap.put(currentRouteNode.getRouteNodeName(), currentRouteNode);
+                    nodesMap.put(context.nodeQName, currentRouteNode);
                 }
             }
         }
-        
+
         // handle nextAppDocStatus route node attribute
         String nextDocStatusName = null;
         boolean hasNextDocStatus;
+
         try {
             hasNextDocStatus = ((Boolean) getXPath().evaluate(NEXT_DOC_STATUS_EXP, currentNode, XPathConstants.BOOLEAN)).booleanValue();
         } catch (XPathExpressionException xpee) {
             LOG.error("Error obtaining node nextAppDocStatus attrib", xpee);
             throw xpee;
         }
+
         if (hasNextDocStatus){
         	try {
         		nextDocStatusName = (String) getXPath().evaluate(NEXT_DOC_STATUS_EXP, currentNode, XPathConstants.STRING);
@@ -1110,7 +1162,8 @@ public class DocumentTypeXmlParser {
         	if (documentType.getValidApplicationStatuses() != null  && documentType.getValidApplicationStatuses().size() > 0){
         		Iterator iter = documentType.getValidApplicationStatuses().iterator();
         		boolean statusValidated = false;
-        		while (iter.hasNext())
+
+                while (iter.hasNext())
         		{
         			ApplicationDocumentStatus myAppDocStat = (ApplicationDocumentStatus) iter.next();
         			if (nextDocStatusName.compareToIgnoreCase(myAppDocStat.getStatusName()) == 0)
@@ -1119,26 +1172,33 @@ public class DocumentTypeXmlParser {
         				break;
         			}
         		}
+
         		if (!statusValidated){
         				XmlException xpee = new XmlException("AppDocStatus value " +  nextDocStatusName + " not allowable.");
         				LOG.error("Error validating nextAppDocStatus name: " +  nextDocStatusName + " against acceptable values.", xpee);
         				throw xpee; 
         		}
         	}
+
         	currentRouteNode.setNextDocStatus(nextDocStatusName);
         }
-        
+
         return currentRouteNode;
     }
 
     private void getSplitNextNodes(Node splitNode, Node routePathNode, RouteNode splitRouteNode, Node routeNodesNode, DocumentType documentType, RoutePathContext context) throws XPathExpressionException, XmlException, GroupNotFoundException {
         NodeList splitBranchNodes;
+
         try {
             splitBranchNodes = (NodeList) getXPath().evaluate("./branch", splitNode, XPathConstants.NODESET);
         } catch (XPathExpressionException xpee) {
             LOG.error("Error obtaining split node branch", xpee);
             throw xpee;
         }
+
+        String splitQName = context.nodeQName;
+        String splitXPath = context.nodeXPath;
+
         for (int i = 0; i < splitBranchNodes.getLength(); i++) {
             String branchName;
             try {
@@ -1147,17 +1207,23 @@ public class DocumentTypeXmlParser {
                 LOG.error("Error obtaining branch name attribute", xpee);
                 throw xpee;
             }
+
             String name;
+
             try {
                 name = (String) getXPath().evaluate("./*[1]/@name", splitBranchNodes.item(i), XPathConstants.STRING);
             } catch (XPathExpressionException xpee) {
                 LOG.error("Error obtaining first split branch node name", xpee);
                 throw xpee;
             }
+
+            context.nodeQName = splitQName + branchName +":";
+            context.nodeXPath = splitXPath  + "//" + "*[@name = '" + branchName +"']";
             context.branch = new BranchPrototype();
             context.branch.setName(branchName);
+            context.previousNodeQName = splitQName;
 
-            createRouteNode(splitRouteNode, name, routePathNode, routeNodesNode, documentType, context);
+            createRouteNode(splitRouteNode, name, routePathNode, routeNodesNode, documentType, cloneContext(context));
         }
     }
 
@@ -1169,12 +1235,15 @@ public class DocumentTypeXmlParser {
             LOG.error("Error evaluating node expression: '" + nodeExpression + "'");
             throw xpee;
         }
+
         if (nodeList.getLength() > 1) {
             throw new XmlException("More than one node under routeNodes has the same name of '" + nodeName + "'");
         }
+
         if (nodeList.getLength() == 0) {
             throw new XmlException("No node definition was found with the name '" + nodeName + "'");
         }
+
         Node node = nodeList.item(0);
 
         RouteNode routeNode = new RouteNode();
@@ -1201,6 +1270,7 @@ public class DocumentTypeXmlParser {
         	exceptionWorkgroupNamespace = Utilities.substituteConfigParameters(
         			(String) getXPath().evaluate("./" + EXCEPTION_GROUP_NAME + "/@" + NAMESPACE, node, XPathConstants.STRING)).trim();
         }
+
         if (org.apache.commons.lang.StringUtils.isEmpty(exceptionWorkgroupName) && XmlHelper.pathExists(xpath, "./" + EXCEPTION_WORKGROUP_NAME, node)) {
         	LOG.warn((new StringBuilder(160)).append("Document Type XML is using deprecated element '").append(EXCEPTION_WORKGROUP_NAME).append(
 				"', please use '").append(EXCEPTION_GROUP_NAME).append("' instead.").toString());
@@ -1209,6 +1279,7 @@ public class DocumentTypeXmlParser {
         	exceptionWorkgroupName = Utilities.parseGroupName(exceptionWg);
         	exceptionWorkgroupNamespace = Utilities.parseGroupNamespaceCode(exceptionWg);
         }
+
         if (org.apache.commons.lang.StringUtils.isEmpty(exceptionWorkgroupName) && XmlHelper.pathExists(xpath, "./" + EXCEPTION_WORKGROUP, node)) {
         	LOG.warn((new StringBuilder(160)).append("Document Type XML is using deprecated element '").append(EXCEPTION_WORKGROUP).append(
 				"', please use '").append(EXCEPTION_GROUP_NAME).append("' instead.").toString());
@@ -1217,12 +1288,14 @@ public class DocumentTypeXmlParser {
             exceptionWorkgroupName = Utilities.parseGroupName(exceptionWg);
             exceptionWorkgroupNamespace = Utilities.parseGroupNamespaceCode(exceptionWg);
         }
+
         if (org.apache.commons.lang.StringUtils.isEmpty(exceptionWorkgroupName)) {
             if (routeNode.getDocumentType().getDefaultExceptionWorkgroup() != null) {
                 exceptionWorkgroupName = routeNode.getDocumentType().getDefaultExceptionWorkgroup().getName();
                 exceptionWorkgroupNamespace = routeNode.getDocumentType().getDefaultExceptionWorkgroup().getNamespaceCode();
             }
         }
+
         if (org.apache.commons.lang.StringUtils.isNotEmpty(exceptionWorkgroupName)
                 && org.apache.commons.lang.StringUtils.isNotEmpty(exceptionWorkgroupNamespace)) {
             exceptionWorkgroup = getGroupService().getGroupByNamespaceCodeAndName(exceptionWorkgroupNamespace,
@@ -1235,6 +1308,7 @@ public class DocumentTypeXmlParser {
                 throw new GroupNotFoundException("Could not locate exception workgroup with namespace '" + exceptionWorkgroupNamespace + "' and name '" + exceptionWorkgroupName + "'");
             }
         }
+
         if (exceptionWorkgroup != null) {
             routeNode.setExceptionWorkgroupName(exceptionWorkgroup.getName());
             routeNode.setExceptionWorkgroupId(exceptionWorkgroup.getId());
@@ -1245,6 +1319,7 @@ public class DocumentTypeXmlParser {
         } else {
             routeNode.setMandatoryRouteInd(Boolean.FALSE);
         }
+
         if (((Boolean) getXPath().evaluate("./finalApproval", node, XPathConstants.BOOLEAN)).booleanValue()) {
             routeNode.setFinalApprovalInd(Boolean.valueOf((String)getXPath().evaluate("./finalApproval", node, XPathConstants.STRING)));
         } else {
@@ -1272,9 +1347,11 @@ public class DocumentTypeXmlParser {
         if (((Boolean) getXPath().evaluate("./ruleTemplate", node, XPathConstants.BOOLEAN)).booleanValue()) {
             String ruleTemplateName = (String) getXPath().evaluate("./ruleTemplate", node, XPathConstants.STRING);
             RuleTemplateBo ruleTemplate = KEWServiceLocator.getRuleTemplateService().findByRuleTemplateName(ruleTemplateName);
+
             if (ruleTemplate == null) {
                 throw new XmlException("Rule template for node '" + routeNode.getRouteNodeName() + "' not found: " + ruleTemplateName);
             }
+
             routeNode.setRouteMethodName(ruleTemplateName);
             routeNode.setRouteMethodCode(KewApiConstants.ROUTE_LEVEL_FLEX_RM);
         } else if (((Boolean) getXPath().evaluate("./routeModule", node, XPathConstants.BOOLEAN)).booleanValue()) {
@@ -1288,19 +1365,23 @@ public class DocumentTypeXmlParser {
             Element rulesEngineElement = (Element)getXPath().evaluate("./rulesEngine", node, XPathConstants.NODE);
             String executorName = rulesEngineElement.getAttribute("executorName");
             String executorClass = rulesEngineElement.getAttribute("executorClass");
+
             if (StringUtils.isBlank(executorName) && StringUtils.isBlank(executorClass)) {
                 throw new XmlException("The rulesEngine declaration must have at least one of 'executorName' or 'executorClass' attributes.");
             } else if (StringUtils.isNotBlank(executorName) && StringUtils.isNotBlank(executorClass)) {
                 throw new XmlException("Only one of 'executorName' or 'executorClass' may be declared on rulesEngine configuration, but both were declared.");
             }
+
             routeNode.setRouteMethodCode(KewApiConstants.ROUTE_LEVEL_RULES_ENGINE);
         }
 
         String nodeType = null;
+
         if (((Boolean) getXPath().evaluate("./type", node, XPathConstants.BOOLEAN)).booleanValue()) {
             nodeType = (String) getXPath().evaluate("./type", node, XPathConstants.STRING);
         } else {
             String localName = (String) getXPath().evaluate("local-name(.)", node, XPathConstants.STRING);
+
             if ("start".equalsIgnoreCase(localName)) {
                 nodeType = "org.kuali.rice.kew.engine.node.InitialNode";
             } else if ("split".equalsIgnoreCase(localName)) {
@@ -1314,13 +1395,17 @@ public class DocumentTypeXmlParser {
             } else if (NodeType.ROLE.getName().equalsIgnoreCase(localName)) {
                 nodeType = RoleNode.class.getName();
             }
+
         }
+
         if (org.apache.commons.lang.StringUtils.isEmpty(nodeType)) {
             throw new XmlException("Could not determine node type for the node named '" + routeNode.getRouteNodeName() + "'");
         }
+
         routeNode.setNodeType(nodeType);
 
         String localName = (String) getXPath().evaluate("local-name(.)", node, XPathConstants.STRING);
+
         if ("split".equalsIgnoreCase(localName)) {
             context.splitNodeStack.addFirst(routeNode);
         } else if ("join".equalsIgnoreCase(localName) && context.splitNodeStack.size() != 0) {
@@ -1331,6 +1416,7 @@ public class DocumentTypeXmlParser {
             routeNode.setRouteMethodName(RoleRouteModule.class.getName());
             routeNode.setRouteMethodCode(KewApiConstants.ROUTE_LEVEL_ROUTE_MODULE);
         }
+
         routeNode.setBranch(context.branch);
 
         return routeNode;
@@ -1439,25 +1525,6 @@ public class DocumentTypeXmlParser {
         return (root.getChildNodes().getLength() > 0) ? XmlJotter.jotDocument(policyConfig) : null;
     }
 
-    private List getDocumentTypeStatuses(NodeList documentTypeStatuses, DocumentType documentType) throws XPathExpressionException, XmlException {
-        List statuses = new ArrayList();
-        Set statusNames = new HashSet();
-
-        for (int i = 0; i < documentTypeStatuses.getLength(); i++) {
-        	ApplicationDocumentStatus status = new ApplicationDocumentStatus();
-        	status.setDocumentType(documentType);
-        	Node myNode = documentTypeStatuses.item(i);  
-        	String statusName = myNode.getFirstChild().getNodeValue();
-        	status.setStatusName(statusName);
-        	if (!statusNames.add(status.getStatusName())) {
-        		throw new XmlException("Application Status '" + status.getStatusName() + "' has already been defined on this document");
-        	} else {
-        		statuses.add(status);
-        	}      
-        }
-        return statuses;
-    }
-
     private List getDocumentTypeAttributes(NodeList documentTypeAttributes, DocumentType documentType) throws XPathExpressionException, WorkflowException {
         List attributes = new ArrayList();
 
@@ -1465,27 +1532,45 @@ public class DocumentTypeXmlParser {
             DocumentTypeAttributeBo attribute = new DocumentTypeAttributeBo();
             attribute.setDocumentType(documentType);
             String ruleAttributeName;
+
             try {
                 ruleAttributeName = (String) getXPath().evaluate("./name", documentTypeAttributes.item(i), XPathConstants.STRING);
             } catch (XPathExpressionException xpee) {
                 LOG.error("Error obtaining rule attribute name", xpee);
                 throw xpee;
             }
+
             RuleAttribute ruleAttribute = KEWServiceLocator.getRuleAttributeService().findByName(ruleAttributeName);
+
             if (ruleAttribute == null) {
                 throw new WorkflowException("Could not find rule attribute: " + ruleAttributeName);
             }
+
             attribute.setDocumentType(documentType);
             attribute.setRuleAttribute(ruleAttribute);
             attribute.setOrderIndex(i+1);
             attributes.add(attribute);
         }
+
         return attributes;
     }
 
     private class RoutePathContext {
         public BranchPrototype branch;
         public LinkedList splitNodeStack = new LinkedList();
+        public String nodeXPath = ".";
+        public String nodeQName = ":";
+        public String previousNodeQName = "";
+    }
+
+    private RoutePathContext cloneContext(RoutePathContext context){
+        RoutePathContext localContext = new RoutePathContext();
+        localContext.branch            = context.branch;
+        localContext.nodeQName         = context.nodeQName;
+        localContext.nodeXPath         = context.nodeXPath;
+        localContext.previousNodeQName = context.previousNodeQName;
+
+        return localContext;
     }
 
     protected GroupService getGroupService() {
@@ -1515,4 +1600,176 @@ public class DocumentTypeXmlParser {
         }
     }
 
+    /**
+     * Utility class used to produce an ascending sequence of integer values starting with 0
+     */
+    private static class Counter {
+        private int value = 0;
+
+        public int nextValue() {
+            return value++;
+        }
+    }
+
+    /**
+     * <p>Helper class encapsulating parsing logic for building ApplicationDocumentStatus and
+     * ApplicationDocumentStatusCategory from the document type DOM.</p>
+     *
+     * <p>Note that this class should not be instantiated.  Instead use the static utility method 
+     * {@link org.kuali.rice.kew.xml.DocumentTypeXmlParser.ApplicationDocumentStatusParser#parseValidApplicationStatuses(org.kuali.rice.kew.doctype.bo.DocumentType, org.w3c.dom.Node, javax.xml.xpath.XPath)}.</p>
+     */
+    private static class ApplicationDocumentStatusParser {
+
+        // set used to make sure there are no problematic or confusing name collisions
+        private final Set<String> uniqueStatusNames = new HashSet<String>();
+
+        private final List<ApplicationDocumentStatus> parsedStatuses = new ArrayList<ApplicationDocumentStatus>();
+        private final List<ApplicationDocumentStatusCategory> parsedCategories = new ArrayList<ApplicationDocumentStatusCategory>();
+
+        Counter newStatusSequence = new Counter(); // used to order the statuses
+
+        /**
+         * Do not instantiate, instead use the static utility method
+         * {@link #parseValidApplicationStatuses(org.kuali.rice.kew.doctype.bo.DocumentType, org.w3c.dom.Node, javax.xml.xpath.XPath)}
+         */
+        @Deprecated  // deprecated to discourage improper use since private is not strong enough in an inner class
+        private ApplicationDocumentStatusParser() { }
+
+        /**
+         *
+         * @param documentType
+         * @param documentTypeNode
+         * @param xpath
+         * @throws XPathExpressionException
+         */
+        @SuppressWarnings("deprecated")
+        public static void parseValidApplicationStatuses(DocumentType documentType, Node documentTypeNode, XPath xpath) throws XPathExpressionException {
+            ApplicationDocumentStatusParser parser = new ApplicationDocumentStatusParser();
+            parser.parseValidApplicationStatusesHelper(documentType, documentTypeNode, xpath);
+        }
+
+        /**
+         * Parses the validApplicationStatuses in the doc type (if there are any) and (<b>SIDE EFFECT</b>) adds the
+         * results to the given documentType.
+         *
+         * @param documentType the documentType being built
+         * @param documentTypeNode the DOM {@link Node} for the xml representation of the document type
+         * @param xpath the XPath object to use for searching within the documentTypeNode
+         * @throws XPathExpressionException
+         */
+        private void parseValidApplicationStatusesHelper(DocumentType documentType, Node documentTypeNode, XPath xpath)
+                throws XPathExpressionException {
+            /*
+            * The following code does not need to apply the isOverwrite mode logic because it already checks to see if each node
+            * is available on the ingested XML. If the node is ingested then it doesn't matter if we're in overwrite mode or not
+            * the ingested code should save.
+            */
+            NodeList appDocStatusList = (NodeList) xpath.evaluate("./" + APP_DOC_STATUSES, documentTypeNode,
+                    XPathConstants.NODESET);
+            if (appDocStatusList.getLength() > 1) {
+                // more than one <validDocumentStatuses> tag is invalid
+                throw new XmlException("More than one " + APP_DOC_STATUSES + " node is present in a document type node");
+
+            } else if (appDocStatusList.getLength() > 0) {
+
+                // if there is exactly one <validDocumentStatuses> tag then parse it and use the values
+                parseCategoriesAndStatusesHelper(documentType, appDocStatusList);
+            }
+        }
+
+        /**
+         * <p>Parses the application document status content (both statuses and categories) from the given NodeList.</p>
+         *
+         * <p>SIDE EFFECT: sets the ValidApplicationStatuses and ApplicationStatusCategories on the DocumentType
+         * argument</p>
+         *
+         * @param documentType the documentType that is being built from the DOM content
+         * @param appDocStatusList the NodeList holding the children of the validApplicationStatuses element
+         */
+        private void parseCategoriesAndStatusesHelper(DocumentType documentType, NodeList appDocStatusList) {
+
+            NodeList appDocStatusChildren = appDocStatusList.item(0).getChildNodes();
+
+            for (int appDocStatusChildrenIndex = 0; appDocStatusChildrenIndex < appDocStatusChildren.getLength();
+                 appDocStatusChildrenIndex ++) {
+
+                Node child = appDocStatusChildren.item(appDocStatusChildrenIndex);
+
+                if (STATUS.equals(child.getNodeName())) {
+
+                    ApplicationDocumentStatus status =
+                            parseApplicationDocumentStatusHelper(documentType, child);
+
+                    parsedStatuses.add(status);
+
+                } else if (CATEGORY.equals(child.getNodeName())) {
+
+                    Node categoryNameAttribute = child.getAttributes().getNamedItem("name");
+                    String categoryName = categoryNameAttribute.getNodeValue();
+
+                    // validate category names are all unique
+                    validateUniqueName(categoryName);
+
+                    ApplicationDocumentStatusCategory category = new ApplicationDocumentStatusCategory();
+                    category.setCategoryName(categoryName);
+                    category.setDocumentType(documentType);
+
+                    // iterate through children
+                    NodeList categoryChildren = child.getChildNodes();
+                    for (int categoryChildIndex = 0; categoryChildIndex < categoryChildren.getLength();
+                         categoryChildIndex++) {
+                        Node categoryChild = categoryChildren.item(categoryChildIndex);
+                        if (Node.ELEMENT_NODE == categoryChild.getNodeType()) {
+                            ApplicationDocumentStatus status =
+                                    parseApplicationDocumentStatusHelper(documentType, categoryChild);
+                            status.setCategoryName(category.getCategoryName());
+
+                            parsedStatuses.add(status);
+                        }
+                    }
+
+                    parsedCategories.add(category);
+                }
+            }
+
+            documentType.setValidApplicationStatuses(parsedStatuses);
+            documentType.setApplicationStatusCategories(parsedCategories);
+        }
+
+        /**
+         * Parse an element Node containg a single application document status name and return an
+         * ApplicationDocumentStatus object for it.
+         *
+         * @param documentType the document type we are building
+         * @param node the status element node
+         * @return the ApplicationDocumentStatus constructed
+         */
+        private ApplicationDocumentStatus parseApplicationDocumentStatusHelper(DocumentType documentType, Node node) {
+            String statusName = node.getTextContent();
+            validateUniqueName(statusName);
+
+            ApplicationDocumentStatus status = new ApplicationDocumentStatus();
+            status.setStatusName(statusName);
+            status.setDocumentType(documentType);
+            // order the statuses according to the order we encounter them
+            status.setSequenceNumber(newStatusSequence.nextValue());
+
+            return status;
+        }
+
+        /**
+         * <p>check that the name has not been used already.
+         *
+         * <p>Side-effect: This check adds the name to the uniqueStatusNames Set.
+         * @param name
+         * @throws XmlException if the name has already been used for another status or category
+         */
+        private void validateUniqueName(String name) throws XmlException {
+            // validate category names are all unique
+            if (!uniqueStatusNames.add(name)) {
+                throw new XmlException("duplicate application document status / category name in document type: "+name);
+            }
+        }
+
+    }
 }

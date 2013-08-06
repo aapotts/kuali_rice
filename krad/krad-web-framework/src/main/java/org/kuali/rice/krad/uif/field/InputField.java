@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,7 +176,7 @@ public class InputField extends DataField implements SimpleConstrainable, CaseCo
             // TODO: can we translate Collections? (possibly combining output with delimiter
             if ((fieldValue != null) && (TypeUtils.isSimpleType(fieldValue.getClass()))) {
                 for (KeyValue keyValue : fieldOptions) {
-                    if (StringUtils.equals((String) fieldValue, keyValue.getKey())) {
+                    if (StringUtils.equals(fieldValue.toString(), keyValue.getKey())) {
                         setAlternateDisplayValue(keyValue.getValue());
                         break;
                     }

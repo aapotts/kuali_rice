@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@
     <property name="name" value="code"/>
     <property name="forceUppercase" value="true"/>
     <property name="label" value="County Code"/>
-    <property name="shortLabel" value="County Cd."/>
+    <property name="shortLabel" value="County Code"/>
     <property name="maxLength" value="10"/>
     <property name="validationPattern">
       <bean parent="AnyCharacterValidationPattern"/>

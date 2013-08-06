@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,7 +226,13 @@ public class BusinessObjectServiceImpl implements BusinessObjectService {
         }
 
         // get the class of the attribute name
-        Class referenceClass = ObjectUtils.getPropertyType( bo, referenceName, persistenceStructureService );
+        Class referenceClass = null;
+        if(bo instanceof PersistableBusinessObject) {
+            referenceClass = persistenceStructureService.getBusinessObjectAttributeClass(((PersistableBusinessObject)bo).getClass(), referenceName);
+        }
+        if(referenceClass == null) {
+            referenceClass = ObjectUtils.getPropertyType( bo, referenceName, persistenceStructureService );
+        }
         if ( referenceClass == null ) {
         	referenceClass = propertyDescriptor.getPropertyType();
         }

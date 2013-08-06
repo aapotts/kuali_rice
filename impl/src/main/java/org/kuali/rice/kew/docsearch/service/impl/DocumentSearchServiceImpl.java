@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,12 +173,30 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
         DocumentSearchCriteria.Builder criteriaBuilder = DocumentSearchCriteria.Builder.create(criteria);
         validateDocumentSearchCriteria(docSearchGenerator, criteriaBuilder);
         DocumentSearchCriteria builtCriteria = applyCriteriaCustomizations(documentType, criteriaBuilder.build());
+
+        // copy over applicationDocumentStatuses if they came back empty -- version compatibility hack!
+        // we could have called into an older client that didn't have the field and it got wiped, but we
+        // still want doc search to work as advertised.
+        if (!CollectionUtils.isEmpty(criteria.getApplicationDocumentStatuses())
+                && CollectionUtils.isEmpty(builtCriteria.getApplicationDocumentStatuses())) {
+            DocumentSearchCriteria.Builder patchedCriteria = DocumentSearchCriteria.Builder.create(builtCriteria);
+            patchedCriteria.setApplicationDocumentStatuses(criteriaBuilder.getApplicationDocumentStatuses());
+            builtCriteria = patchedCriteria.build();
+        }
+
         builtCriteria = applyCriteriaDefaults(builtCriteria);
         boolean criteriaModified = !criteria.equals(builtCriteria);
         List<RemotableAttributeField> searchFields = determineSearchFields(documentType);
         DocumentSearchResults.Builder searchResults = docSearchDao.findDocuments(docSearchGenerator, builtCriteria, criteriaModified, searchFields);
         if (documentType != null) {
-            DocumentSearchResultValues resultValues = getDocumentSearchCustomizationMediator().customizeResults(documentType, builtCriteria, searchResults.build());
+             // Pass in the principalId as part of searchCriteria to result customizers
+            //TODO: The right way  to do this should have been to update the API for document customizer
+
+            DocumentSearchCriteria.Builder docSearchUserIdCriteriaBuilder = DocumentSearchCriteria.Builder.create(builtCriteria);
+            docSearchUserIdCriteriaBuilder.setDocSearchUserId(principalId);
+            DocumentSearchCriteria docSearchUserIdCriteria = docSearchUserIdCriteriaBuilder.build();
+
+            DocumentSearchResultValues resultValues = getDocumentSearchCustomizationMediator().customizeResults(documentType, docSearchUserIdCriteria, searchResults.build());
             if (resultValues != null && CollectionUtils.isNotEmpty(resultValues.getResultValues())) {
                 Map<String, DocumentSearchResultValue> resultValueMap = new HashMap<String, DocumentSearchResultValue>();
                 for (DocumentSearchResultValue resultValue : resultValues.getResultValues()) {
@@ -238,14 +256,20 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
                 if (!documentAttributeNamesCustomized.contains(name)) {
                     documentAttributeNamesCustomized.add(name);
                     newDocumentAttributes.addAll(customizedAttributeMap.get(name));
+                    customizedAttributeMap.remove(name);
                 }
             } else {
-                newDocumentAttributes.add(documentAttribute);
+                if (!documentAttributeNamesCustomized.contains(name)) {
+                    newDocumentAttributes.add(documentAttribute);
+                }
             }
+        }
+
+        for (List<DocumentAttribute.AbstractBuilder<?>> cusotmizedDocumentAttribute : customizedAttributeMap.values()) {
+            newDocumentAttributes.addAll(cusotmizedDocumentAttribute);
         }
         result.setDocumentAttributes(newDocumentAttributes);
     }
-
 
     /**
      * Applies any document type-specific customizations to the lookup criteria.  If no customizations are configured
@@ -309,6 +333,7 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
         builder.setStartAtIndex(criteria.getStartAtIndex());
         builder.setMaxResults(criteria.getMaxResults());
         builder.setIsAdvancedSearch(criteria.getIsAdvancedSearch());
+        builder.setSearchOptions(criteria.getSearchOptions());
         return builder;
     }
 
@@ -732,5 +757,15 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
 		}
 		return kualiConfigurationService;
 	}
+
+    @Override
+    public int getMaxResultCap(DocumentSearchCriteria criteria){
+        return docSearchDao.getMaxResultCap(criteria);
+    }
+
+    @Override
+    public int getFetchMoreIterationLimit(){
+        return docSearchDao.getFetchMoreIterationLimit();
+    }
 
 }

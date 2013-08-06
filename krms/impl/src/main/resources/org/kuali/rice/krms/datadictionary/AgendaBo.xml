@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -133,6 +133,17 @@
     </property>
     <property name="singlePageView" value="false"/>
     <property name="entryPageId" value="AgendaEditorView-Agenda-Page"/>
+    <property name="propertyReplacers">
+      <list>
+        <bean parent="Uif-ConditionalBeanPropertyReplacer" p:propertyName="items[0].items" p:condition="dataObject eq null">
+          <property name="replacement">
+            <list>
+              <bean parent="Uif-MessageField" p:messageText="No records found for the given parameters."/>
+            </list>
+          </property>
+        </bean>
+      </list>
+    </property>
   </bean>
 
 </beans>

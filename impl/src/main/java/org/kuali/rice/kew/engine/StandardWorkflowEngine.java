@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -393,8 +393,8 @@ public class StandardWorkflowEngine implements WorkflowEngine {
 	// document state
 	protected DocumentRouteHeaderValue nodePostProcess(RouteContext context) throws InvalidActionTakenException {
 		DocumentRouteHeaderValue document = context.getDocument();
-		Collection<RouteNodeInstance> activeNodes = getRouteNodeService().getActiveNodeInstances(document.getDocumentId());
-		boolean moreNodes = false;
+        Collection<RouteNodeInstance> activeNodes = RouteNodeUtils.getActiveNodeInstances(document);
+        boolean moreNodes = false;
 		for (Iterator<RouteNodeInstance> iterator = activeNodes.iterator(); iterator.hasNext();) {
 			RouteNodeInstance nodeInstance = (RouteNodeInstance) iterator.next();
 			moreNodes = moreNodes || !nodeInstance.isComplete();

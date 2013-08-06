@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,9 +74,9 @@ public class PerformLookupComponent implements EDLModelComponent {
 			LOG.error("Cannot find lookup field parameters definition for field " + lookupField);
 			return null;
 		}
-		
-		XPath xPath = XPathFactory.newInstance().newXPath();
-		try {
+
+        XPath xPath = edlContext.getXpath();
+        try {
 			String businessObjectClassName = xPath.evaluate("//fieldDef[@name='" + lookupField + "']/lookup/businessObjectClassName", dom);
 			return businessObjectClassName;
 		} catch (XPathExpressionException e) {
@@ -91,9 +91,9 @@ public class PerformLookupComponent implements EDLModelComponent {
 			LOG.error("Cannot find lookup field parameters definition for field " + lookupField);
 			return null;
 		}
-		
-		XPath xPath = XPathFactory.newInstance().newXPath();
-		try {
+
+        XPath xPath = edlContext.getXpath();
+        try {
 			String lookupParameters = xPath.evaluate("//fieldDef[@name='" + lookupField + "']/lookup/fieldConversions", dom);
 			return lookupParameters;
 		} catch (XPathExpressionException e) {
@@ -121,9 +121,9 @@ public class PerformLookupComponent implements EDLModelComponent {
 			
 			String parameterName = parameterDefinition.substring(colonInd + 1);
 			String parameterValuePropertyName = parameterDefinition.substring(0, colonInd);
-			
-			XPath xPath = XPathFactory.newInstance().newXPath();
-			try {
+
+            XPath xPath = edlContext.getXpath();
+            try {
                 String parameterValue = xPath.evaluate("//field[@name='" + parameterValuePropertyName + "']/value", currentVersion);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(XmlJotter.jotNode(currentVersion, true));
@@ -145,9 +145,9 @@ public class PerformLookupComponent implements EDLModelComponent {
 			LOG.error("Cannot find lookup field parameters definition for field " + lookupField);
 			return null;
 		}
-		
-		XPath xPath = XPathFactory.newInstance().newXPath();
-		try {
+
+        XPath xPath = edlContext.getXpath();
+        try {
 			String lookupParameters = xPath.evaluate("//fieldDef[@name='" + lookupField + "']/lookup/lookupParameters", dom);
 			return lookupParameters;
 		} catch (XPathExpressionException e) {

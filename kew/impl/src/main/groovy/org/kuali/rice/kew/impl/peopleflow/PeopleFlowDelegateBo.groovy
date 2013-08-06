@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,8 +112,11 @@ class PeopleFlowDelegateBo extends PersistableBusinessObjectBase implements Peop
 
     public void setMemberId(String memberId) {
         this.memberId = memberId;
+        updateRelatedObject()
+    }
 
-        // trigger update of related object
+    // trigger update of related object
+    public void updateRelatedObject() {
         if (MemberType.PRINCIPAL.getCode().equals(memberTypeCode)) {
             getPerson();
         } else if (MemberType.GROUP.getCode().equals(memberTypeCode)) {

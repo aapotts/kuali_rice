@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,7 @@ public final class InIgnoreCasePredicate extends AbstractPredicate implements Mu
 			throw new IllegalArgumentException("Property path cannot be null or blank.");
 		}
 		this.propertyPath = propertyPath;
+        CriteriaSupportUtils.validateValuesForMultiValuedPredicate(values);
 
         if (values == null) {
             this.values = Collections.emptySet();

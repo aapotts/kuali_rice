@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,6 +131,10 @@ public class GroupLookupableHelperServiceImpl  extends KimLookupableHelperServic
         criteriaMap.remove(KRADConstants.DOC_FORM_KEY);
         criteriaMap.remove(KRADConstants.BACK_LOCATION);
         criteriaMap.remove(KRADConstants.DOC_NUM);
+        String refToRef = criteriaMap.get(KRADConstants.REFERENCES_TO_REFRESH);
+        if (StringUtils.isNotBlank(refToRef) && refToRef.equalsIgnoreCase("GroupBo")) {
+            criteriaMap.remove(KRADConstants.REFERENCES_TO_REFRESH);
+        }
 
         if (!criteriaMap.isEmpty()) {
             List<Predicate> predicates = new ArrayList<Predicate>();
@@ -154,8 +158,8 @@ public class GroupLookupableHelperServiceImpl  extends KimLookupableHelperServic
                                             new String[principalIds.size()])),
                                     equal("members.typeCode", KimConstants.KimGroupMemberTypes.PRINCIPAL_MEMBER_TYPE.getCode()),
                                     and(
-                                        or(isNull("members.activeFromDateValue"), greaterThanOrEqual("members.activeFromDateValue", currentTime)),
-                                        or(isNull("members.activeToDateValue"), lessThan("members.activeToDateValue", currentTime))
+                                            or(isNull("members.activeFromDateValue"), lessThanOrEqual("members.activeFromDateValue", currentTime)),
+                                            or(isNull("members.activeToDateValue"), greaterThan("members.activeToDateValue", currentTime))
                                     )
                                 ));
                 }
@@ -458,7 +462,7 @@ public class GroupLookupableHelperServiceImpl  extends KimLookupableHelperServic
 
 						String attrDefnId = d.getId();
 						typeField.setFieldLabel(definition.getLabel());
-						typeField.setPropertyName("attributes[" + definition.getName()+"]");
+						typeField.setPropertyName("attributes(" + definition.getName()+")");
 						typeField.setPropertyValue(fieldValues.get(typeField.getPropertyName()));
 						if (definition.getControl().isSelect()) {
                             typeField.setFieldValidValues(definition.getOptionsFinder().getKeyValues());

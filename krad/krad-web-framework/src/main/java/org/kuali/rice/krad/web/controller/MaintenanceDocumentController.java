@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,26 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.kuali.rice.core.api.config.property.Config;
+import org.kuali.rice.core.api.config.property.ConfigContext;
+import org.kuali.rice.core.api.config.property.ConfigurationService;
 import org.kuali.rice.kew.api.KewApiConstants;
 import org.kuali.rice.krad.bo.PersistableAttachment;
 import org.kuali.rice.krad.bo.PersistableBusinessObject;
 import org.kuali.rice.krad.datadictionary.DocumentEntry;
+import org.kuali.rice.krad.exception.UnknownDocumentIdException;
 import org.kuali.rice.krad.maintenance.MaintenanceDocument;
 import org.kuali.rice.krad.maintenance.Maintainable;
 import org.kuali.rice.krad.maintenance.MaintenanceUtils;
+import org.kuali.rice.krad.service.KRADServiceLocator;
 import org.kuali.rice.krad.service.KRADServiceLocatorWeb;
 import org.kuali.rice.krad.service.MaintenanceDocumentService;
+import org.kuali.rice.krad.uif.UifConstants;
+import org.kuali.rice.krad.uif.UifParameters;
+import org.kuali.rice.krad.util.GlobalVariables;
 import org.kuali.rice.krad.util.KRADConstants;
 import org.kuali.rice.krad.web.form.DocumentFormBase;
+import org.kuali.rice.krad.web.form.InitiatedDocumentInfoForm;
 import org.kuali.rice.krad.web.form.MaintenanceForm;
 import org.kuali.rice.krad.web.form.UifFormBase;
 import org.springframework.stereotype.Controller;
@@ -38,6 +47,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Controller for <code>MaintenanceView</code> screens which operate on
@@ -74,12 +89,23 @@ public class MaintenanceDocumentController extends DocumentControllerBase {
 
         // in all of the following cases we want to load the document
         if (ArrayUtils.contains(DOCUMENT_LOAD_COMMANDS, form.getCommand()) && form.getDocId() != null) {
-            loadDocument(form);
+            try {
+                loadDocument(form);
+            } catch (UnknownDocumentIdException udie) {
+                ConfigurationService kualiConfigurationService = KRADServiceLocator.getKualiConfigurationService();
+                StringBuffer sb = new StringBuffer();
+                sb.append(kualiConfigurationService.getPropertyValueAsString(KRADConstants.KRAD_URL_KEY));
+                sb.append(kualiConfigurationService.getPropertyValueAsString(KRADConstants.KRAD_INITIATED_DOCUMENT_URL_KEY));
+                Properties props = new Properties();
+                props.put(UifParameters.METHOD_TO_CALL, UifConstants.MethodToCallNames.START);
+                GlobalVariables.getUifFormManager().removeForm(form);
+                return performRedirect(new InitiatedDocumentInfoForm(), sb.toString(), props);
+            }
         } else if (KewApiConstants.INITIATE_COMMAND.equals(form.getCommand())) {
             createDocument(form);
         } else {
             LOG.error("docHandler called with invalid parameters");
-            throw new IllegalStateException("docHandler called with invalid parameters");
+            throw new IllegalArgumentException("docHandler called with invalid parameters");
         }
         // * end copy/paste from the base
 
@@ -105,7 +131,7 @@ public class MaintenanceDocumentController extends DocumentControllerBase {
             setupMaintenance(form, request, KRADConstants.MAINTENANCE_NEW_ACTION);
         } else {
             LOG.error("We should never have gotten to here");
-            throw new IllegalStateException("docHandler called with invalid parameters");
+            throw new IllegalArgumentException("docHandler called with invalid parameters");
         }
 
         return getUIFModelAndView(form);

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -313,7 +313,7 @@ public class NoteConfigComponent implements EDLModelComponent {
             // Check if edoclite specifies <param name="sendEmailOnNoteSave">
             Document edlDom = EdlServiceLocator.getEDocLiteService()
                     .getDefinitionXml(edlContext.getEdocLiteAssociation());
-            XPath xpath = XPathFactory.newInstance().newXPath();
+            XPath xpath = edlContext.getXpath();
             String xpathExpression = "//config/param[@name='sendEmailOnNoteSave']";
             try {
                 String match = (String) xpath.evaluate(xpathExpression, edlDom, XPathConstants.STRING);

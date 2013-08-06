@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import java.util.List;
 
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  * Service for working with stylesheets.  This service provides pure data-oriented
@@ -47,6 +50,7 @@ public interface StyleService {
     /**
      * @see StyleRepositoryService#saveStyle(Style)
      */
+    @CacheEvict(value={Style.Cache.NAME}, allEntries = true)
     public void saveStyle(Style data);
     
     /**
@@ -59,6 +63,7 @@ public interface StyleService {
      * @throws TransformerConfigurationException if compilation of the stylesheet fails
      * @throws IllegalArgumentException if the given styleName is null or blank
      */
+    @Cacheable(value= Style.Cache.NAME, key="'styleName=' + #p0")
     public Templates getStyleAsTranslet(String styleName) throws TransformerConfigurationException;
 
 	

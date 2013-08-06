@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package org.kuali.rice.kns.document.authorization;
 
+import org.kuali.rice.kns.document.MaintenanceDocument;
 import org.kuali.rice.krad.bo.BusinessObject;
-import org.kuali.rice.krad.maintenance.MaintenanceDocument;
 import org.kuali.rice.krad.service.KRADServiceLocatorWeb;
 
 import java.util.HashSet;
@@ -45,14 +45,17 @@ public class MaintenanceDocumentPresentationControllerBase extends DocumentPrese
         return new HashSet<String>();
     }
 
+    @Override
     public Set<String> getConditionallyReadOnlyPropertyNames(MaintenanceDocument document) {
         return new HashSet<String>();
     }
 
+    @Override
     public Set<String> getConditionallyReadOnlySectionIds(MaintenanceDocument document) {
         return new HashSet<String>();
     }
 
+    @Override
     public Set<String> getConditionallyRequiredPropertyNames(MaintenanceDocument document) {
         return new HashSet<String>();
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.kuali.rice.kim.api.role.Role;
 import org.kuali.rice.kim.api.role.RoleMember;
 import org.kuali.rice.kim.api.services.KimApiServiceLocator;
 import org.kuali.rice.kim.api.type.KimType;
+import org.kuali.rice.kim.framework.role.RoleEbo;
 import org.kuali.rice.kim.framework.role.RoleTypeService;
 import org.kuali.rice.kim.framework.type.KimTypeService;
 import org.kuali.rice.kim.impl.common.attribute.KimAttributeBo;
@@ -64,7 +65,7 @@ abstract class RoleServiceBase {
     private GroupService groupService;
     private ResponsibilityInternalService responsibilityInternalService;
     private RoleDao roleDao;
-    private CriteriaLookupService criteriaLookupService;
+    protected CriteriaLookupService criteriaLookupService;
 
     /**
      * A helper enumeration for indicating which KimRoleDao method to use when attempting to get role/delegation-related lists that are not in the cache.
@@ -80,6 +81,14 @@ abstract class RoleServiceBase {
         DELEGATION_PRINCIPALS_FOR_PRINCIPAL_ID_AND_DELEGATION_IDS,
         DELEGATION_GROUPS_FOR_GROUP_IDS_AND_DELEGATION_IDS,
         DELEGATION_MEMBERS_FOR_DELEGATION_IDS
+    }
+
+    /**
+     * Explicitly sets the BusinessObjectService to use. For testability.
+     * @param bos the BusinessObjectService to use
+     */
+    void setBusinessObjectService(BusinessObjectService bos) {
+        businessObjectService = bos;
     }
 
     /**
@@ -113,6 +122,17 @@ abstract class RoleServiceBase {
                 }
             }
         }
+    }
+
+    protected List<RoleMemberBo> getRoleMembersForPrincipalId(String roleId, String principalId) {
+        return roleDao.getRolePrincipalsForPrincipalIdAndRoleIds(Collections.singletonList(roleId), principalId, null);
+    }
+
+    protected List<RoleMemberBo> getRoleMembersForGroupIds(String roleId, List<String> groupIds) {
+        if (CollectionUtils.isEmpty(groupIds)) {
+            return new ArrayList<RoleMemberBo>();
+        }
+        return roleDao.getRoleMembersForGroupIds(roleId, groupIds);
     }
 
     /**
@@ -201,6 +221,18 @@ abstract class RoleServiceBase {
 
         return getBusinessObjectService().findByPrimaryKey(RoleMemberBo.class, Collections.singletonMap(
                KimConstants.PrimaryKeyConstants.ID, roleMemberId));
+    }
+
+    /**
+     * Retrieves a RoleResponsibilityActionBo object by its ID.
+     */
+    protected RoleResponsibilityActionBo getRoleResponsibilityActionBo(String roleResponsibilityActionId) {
+        if (StringUtils.isBlank(roleResponsibilityActionId)) {
+            return null;
+        }
+
+        return getBusinessObjectService().findByPrimaryKey(RoleResponsibilityActionBo.class, Collections.singletonMap(
+                KimConstants.PrimaryKeyConstants.ID, roleResponsibilityActionId));
     }
 
     /**
@@ -425,7 +457,7 @@ abstract class RoleServiceBase {
         return getBusinessObjectService().findByPrimaryKey(RoleBoLite.class, criteria);
     }
 
-	protected List<RoleMember> doAnyMemberRecordsMatchByExactQualifier( RoleBo role, String memberId, RoleDaoAction daoActionToTake, Map<String, String> qualifier ) {
+	protected List<RoleMember> doAnyMemberRecordsMatchByExactQualifier( RoleEbo role, String memberId, RoleDaoAction daoActionToTake, Map<String, String> qualifier ) {
 		List<RoleMemberBo> roleMemberBos = getRoleMembersByExactQualifierMatch(role, memberId, daoActionToTake, qualifier);
         List<RoleMember> roleMembers = new ArrayList<RoleMember>();
         if(CollectionUtils.isNotEmpty(roleMemberBos)) {
@@ -438,7 +470,7 @@ abstract class RoleServiceBase {
 		return Collections.emptyList();
 	}
 	
-	protected List<RoleMemberBo> getRoleMembersByExactQualifierMatch(RoleBo role, String memberId, RoleDaoAction daoActionToTake, Map<String, String> qualifier) {
+	protected List<RoleMemberBo> getRoleMembersByExactQualifierMatch(RoleEbo role, String memberId, RoleDaoAction daoActionToTake, Map<String, String> qualifier) {
 		List<RoleMemberBo> rms = new ArrayList<RoleMemberBo>();
 		RoleTypeService roleTypeService = getRoleTypeService( role.getId() );
 		if(roleTypeService != null) {
@@ -458,7 +490,7 @@ abstract class RoleServiceBase {
 	        					rms.add(rm);
 	        				}
 	        			}
-	        			break;	    				
+                        break;
 	    			default : // The daoActionToTake parameter is invalid; throw an exception.
 	    				throw new IllegalArgumentException("The 'daoActionToTake' parameter cannot refer to a non-role-member-related value!");
     			}
@@ -502,11 +534,32 @@ abstract class RoleServiceBase {
      */
     protected RoleTypeService getRoleTypeService(String roleId) {
         RoleBoLite roleBo = getRoleBoLite(roleId);
-        KimType roleType = KimTypeBo.to(roleBo.getKimRoleType());
-        if (roleType != null) {
-            return getRoleTypeService(roleType);
+        if(roleBo != null){
+            KimType roleType = KimTypeBo.to(roleBo.getKimRoleType());
+            if (roleType != null) {
+                return getRoleTypeService(roleType);
+            }
         }
-        return null;
+        return KimImplServiceLocator.getDefaultRoleTypeService();
+    }
+
+    /**
+     * Retrieves the role type service for the given service name.
+     *
+     * @param serviceName the name of the service to retrieve
+     * @return the Role Type Service
+     */
+    protected RoleTypeService getRoleTypeServiceByName(String serviceName) {
+        try {
+            KimTypeService service = (KimTypeService) GlobalResourceLoader.getService(QName.valueOf(serviceName));
+            if (service != null && service instanceof RoleTypeService) {
+                return (RoleTypeService) service;
+            }
+            return (RoleTypeService) KimImplServiceLocator.getService("kimNoMembersRoleTypeService");
+        } catch (Exception ex) {
+            LOG.warn("Unable to find role type service with name: " + serviceName, ex);
+            return (RoleTypeService) KimImplServiceLocator.getService("kimNoMembersRoleTypeService");
+        }
     }
 
     protected RoleTypeService getRoleTypeService(KimType typeInfo) {
@@ -523,7 +576,7 @@ abstract class RoleServiceBase {
                 return (RoleTypeService) KimImplServiceLocator.getService("kimNoMembersRoleTypeService");
             }
         }
-        return null;
+        return KimImplServiceLocator.getDefaultRoleTypeService();
     }
     
     protected Map<String, String> populateQualifiersForExactMatch(Map<String, String> defaultQualification, List<String> attributes) {

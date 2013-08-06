@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.kim.api.identity.Person;
 import org.kuali.rice.kim.api.identity.PersonService;
 import org.kuali.rice.kim.api.services.KimApiServiceLocator;
+import org.kuali.rice.krad.UserSessionUtils;
 import org.kuali.rice.krad.UserSession;
 import org.kuali.rice.krad.bo.AdHocRoutePerson;
 import org.kuali.rice.krad.bo.AdHocRouteRecipient;
@@ -130,7 +131,7 @@ public class DocumentServiceImpl implements DocumentService {
         prepareWorkflowDocument(savedDocument);
         getWorkflowDocumentService().save(savedDocument.getDocumentHeader().getWorkflowDocument(), null);
 
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 savedDocument.getDocumentHeader().getWorkflowDocument());
 
         return savedDocument;
@@ -192,7 +193,7 @@ public class DocumentServiceImpl implements DocumentService {
         prepareWorkflowDocument(savedDocument);
         getWorkflowDocumentService()
                 .route(savedDocument.getDocumentHeader().getWorkflowDocument(), annotation, adHocRecipients);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 savedDocument.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(savedDocument);
         return savedDocument;
@@ -215,7 +216,7 @@ public class DocumentServiceImpl implements DocumentService {
         prepareWorkflowDocument(savedDocument);
         getWorkflowDocumentService()
                 .approve(savedDocument.getDocumentHeader().getWorkflowDocument(), annotation, adHocRecipients);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 savedDocument.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(savedDocument);
         return savedDocument;
@@ -230,7 +231,7 @@ public class DocumentServiceImpl implements DocumentService {
         getDocumentDao().save(document);
         prepareWorkflowDocument(document);
         getWorkflowDocumentService().superUserApprove(document.getDocumentHeader().getWorkflowDocument(), annotation);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(document);
         return document;
@@ -245,7 +246,7 @@ public class DocumentServiceImpl implements DocumentService {
         getDocumentDao().save(document);
         prepareWorkflowDocument(document);
         getWorkflowDocumentService().superUserCancel(document.getDocumentHeader().getWorkflowDocument(), annotation);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(document);
         return document;
@@ -258,14 +259,24 @@ public class DocumentServiceImpl implements DocumentService {
     @Override
     public Document superUserDisapproveDocument(Document document, String annotation) throws WorkflowException {
         getDocumentDao().save(document);
+        return superUserDisapproveDocumentWithoutSaving(document, annotation);
+    }
+
+    /**
+     * @see org.kuali.rice.krad.service.DocumentService#superUserCancelDocument(org.kuali.rice.krad.document.Document,
+     *      java.lang.String)
+     */
+    @Override
+    public Document superUserDisapproveDocumentWithoutSaving(Document document, String annotation) throws WorkflowException {
         prepareWorkflowDocument(document);
         getWorkflowDocumentService()
                 .superUserDisapprove(document.getDocumentHeader().getWorkflowDocument(), annotation);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(document);
         return document;
     }
+
 
     /**
      * @see org.kuali.rice.krad.service.DocumentService#disapproveDocument(org.kuali.rice.krad.document.Document,
@@ -290,7 +301,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         prepareWorkflowDocument(document);
         getWorkflowDocumentService().disapprove(document.getDocumentHeader().getWorkflowDocument(), annotation);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(document);
         return document;
@@ -319,7 +330,7 @@ public class DocumentServiceImpl implements DocumentService {
         }
         prepareWorkflowDocument(document);
         getWorkflowDocumentService().cancel(document.getDocumentHeader().getWorkflowDocument(), annotation);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         //getBusinessObjectService().delete(document.getAdHocRoutePersons());
         //getBusinessObjectService().delete(document.getAdHocRouteWorkgroups());
@@ -337,7 +348,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         prepareWorkflowDocument(document);
         getWorkflowDocumentService().recall(document.getDocumentHeader().getWorkflowDocument(), annotation, cancel);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(document);
         return document;
@@ -358,7 +369,7 @@ public class DocumentServiceImpl implements DocumentService {
         prepareWorkflowDocument(document);
         getWorkflowDocumentService()
                 .acknowledge(document.getDocumentHeader().getWorkflowDocument(), annotation, adHocRecipients);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(document);
         return document;
@@ -381,7 +392,7 @@ public class DocumentServiceImpl implements DocumentService {
         prepareWorkflowDocument(savedDocument);
         getWorkflowDocumentService()
                 .blanketApprove(savedDocument.getDocumentHeader().getWorkflowDocument(), annotation, adHocRecipients);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 savedDocument.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(savedDocument);
         return savedDocument;
@@ -398,7 +409,7 @@ public class DocumentServiceImpl implements DocumentService {
         // populate document content so searchable attributes will be indexed properly
         document.populateDocumentForRouting();
         getWorkflowDocumentService().clearFyi(document.getDocumentHeader().getWorkflowDocument(), adHocRecipients);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         removeAdHocPersonsAndWorkgroups(document);
         return document;
@@ -421,7 +432,7 @@ public class DocumentServiceImpl implements DocumentService {
         getWorkflowDocumentService().complete(document.getDocumentHeader().getWorkflowDocument(), annotation,
                 adHocRecipients);
 
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
 
         removeAdHocPersonsAndWorkgroups(document);
@@ -518,12 +529,15 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     /**
-     * Creates a new document by document type name.
+     * Creates a new document by document type name. The principal name
+     * passed in will be used as the document initiator.  If the  initiatorPrincipalNm
+     * is null or blank, the current user will be used.
      *
-     * @see org.kuali.rice.krad.service.DocumentService#getNewDocument(java.lang.String)
+     * @see org.kuali.rice.krad.service.DocumentService#getNewDocument(String, String)
      */
     @Override
-    public Document getNewDocument(String documentTypeName) throws WorkflowException {
+    public Document getNewDocument(String documentTypeName, String initiatorPrincipalNm) throws WorkflowException {
+
         // argument validation
         String watchName = "DocumentServiceImpl.getNewDocument";
         StopWatch watch = new StopWatch();
@@ -542,8 +556,16 @@ public class DocumentServiceImpl implements DocumentService {
         // get the class for this docTypeName
         Class<? extends Document> documentClass = getDocumentClassByTypeName(documentTypeName);
 
-        // get the current user
-        Person currentUser = GlobalVariables.getUserSession().getPerson();
+        // get the initiator
+        Person initiator = null;
+        if (StringUtils.isBlank(initiatorPrincipalNm)) {
+            initiator = GlobalVariables.getUserSession().getPerson();
+        } else {
+            initiator = KimApiServiceLocator.getPersonService().getPersonByPrincipalName(initiatorPrincipalNm);
+            if (ObjectUtils.isNull(initiator)) {
+                initiator = GlobalVariables.getUserSession().getPerson();
+            }
+        }
 
         // get the authorization
         DocumentAuthorizer documentAuthorizer = getDocumentDictionaryService().getDocumentAuthorizer(documentTypeName);
@@ -552,13 +574,13 @@ public class DocumentServiceImpl implements DocumentService {
         // make sure this person is authorized to initiate
         LOG.debug("calling canInitiate from getNewDocument()");
         if (!documentPresentationController.canInitiate(documentTypeName) ||
-                !documentAuthorizer.canInitiate(documentTypeName, currentUser)) {
-            throw new DocumentAuthorizationException(currentUser.getPrincipalName(), "initiate", documentTypeName);
+                !documentAuthorizer.canInitiate(documentTypeName, initiator)) {
+            throw new DocumentAuthorizationException(initiator.getPrincipalName(), "initiate", documentTypeName);
         }
 
         // initiate new workflow entry, get the workflow doc
-        WorkflowDocument workflowDocument = getWorkflowDocumentService().createWorkflowDocument(documentTypeName, GlobalVariables.getUserSession().getPerson());
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),workflowDocument);
+        WorkflowDocument workflowDocument = getWorkflowDocumentService().createWorkflowDocument(documentTypeName, initiator);
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(), workflowDocument);
 
         // create a new document header object
         DocumentHeader documentHeader = null;
@@ -619,6 +641,17 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     /**
+     * Creates a new document by document type name.
+     *
+     * @see org.kuali.rice.krad.service.DocumentService#getNewDocument(java.lang.String)
+     */
+    @Override
+    public Document getNewDocument(String documentTypeName) throws WorkflowException {
+        return getNewDocument(documentTypeName, null);
+    }
+
+
+    /**
      * This is temporary until workflow 2.0 and reads from a table to get documents whose status has changed to A
      * (approved - no
      * outstanding approval actions requested)
@@ -649,8 +682,7 @@ public class DocumentServiceImpl implements DocumentService {
             }
             workflowDocument = getWorkflowDocumentService()
                     .loadWorkflowDocument(documentHeaderId, GlobalVariables.getUserSession().getPerson());
-            KRADServiceLocatorWeb.getSessionDocumentService()
-                    .addDocumentToUserSession(GlobalVariables.getUserSession(), workflowDocument);
+            UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(), workflowDocument);
 
 	        Class<? extends Document> documentClass = getDocumentClassByTypeName(workflowDocument.getDocumentTypeName());
 
@@ -806,6 +838,7 @@ public class DocumentServiceImpl implements DocumentService {
     /**
      * Validates and persists a document.
      */
+    @Override
     public Document validateAndPersistDocument(Document document, KualiDocumentEvent event) throws ValidationException {
         if (document == null) {
             LOG.error("document passed to validateAndPersist was null");
@@ -1013,7 +1046,7 @@ public class DocumentServiceImpl implements DocumentService {
         getWorkflowDocumentService()
                 .sendWorkflowNotification(document.getDocumentHeader().getWorkflowDocument(), annotation,
                         adHocRecipients);
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(),
                 document.getDocumentHeader().getWorkflowDocument());
         //getBusinessObjectService().delete(document.getAdHocRoutePersons());
         //getBusinessObjectService().delete(document.getAdHocRouteWorkgroups());

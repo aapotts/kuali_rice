@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PersistenceServiceStructureImplBase {
-
+    protected static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(PersistenceServiceStructureImplBase.class);
 	private DescriptorRepository descriptorRepository;
 
 	/**
@@ -188,8 +188,17 @@ public class PersistenceServiceStructureImplBase {
 		} else {
 	    	// Legacy OJB
 			Class attributeClassLegacy = null;
-			ClassDescriptor classDescriptor = this.getClassDescriptor(clazz);
-			ObjectReferenceDescriptor refDescriptor = classDescriptor.getObjectReferenceDescriptorByName(baseAttributeName);
+            ClassDescriptor classDescriptor = null;
+            try{
+			    classDescriptor = this.getClassDescriptor(clazz);
+            }catch (ClassNotPersistableException e){
+                LOG.warn("Class descriptor for "+ clazz.getName() +"was not found");
+            }
+
+			ObjectReferenceDescriptor refDescriptor = null;
+            if(classDescriptor != null){
+                refDescriptor = classDescriptor.getObjectReferenceDescriptorByName(baseAttributeName);
+            }
 
 			if (refDescriptor != null) {
 				attributeClassLegacy = refDescriptor.getItemClass();

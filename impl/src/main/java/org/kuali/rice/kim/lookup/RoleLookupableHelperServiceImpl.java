@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -269,15 +269,6 @@ public class RoleLookupableHelperServiceImpl extends KimLookupableHelperServiceI
 	}
 	
 	private static final String ROLE_ID_URL_KEY = "&"+KimConstants.PrimaryKeyConstants.ROLE_ID+"=";
-
-	@Override
-	public HtmlData getInquiryUrl(BusinessObject bo, String propertyName) {
-		HtmlData.AnchorHtmlData inquiryHtmlData = (HtmlData.AnchorHtmlData)super.getInquiryUrl(bo, propertyName);
-		if(inquiryHtmlData!=null && StringUtils.isNotBlank(inquiryHtmlData.getHref()) && inquiryHtmlData.getHref().contains(ROLE_ID_URL_KEY)) {
-			inquiryHtmlData.setHref(getCustomRoleInquiryHref(getBackLocation(), inquiryHtmlData.getHref()));
-		}
-		return inquiryHtmlData;
-	}
 
 	public static String getCustomRoleInquiryHref(String href){
 		return getCustomRoleInquiryHref("", href);

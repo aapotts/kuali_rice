@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.kuali.rice.kim.api.identity.Person;
 import org.kuali.rice.krad.bo.AdHocRouteRecipient;
 import org.kuali.rice.krad.bo.Note;
 import org.kuali.rice.krad.document.Document;
+import org.kuali.rice.krad.exception.ValidationException;
 import org.kuali.rice.krad.rules.rule.event.KualiDocumentEvent;
 import org.kuali.rice.krad.rules.rule.event.SaveEvent;
 
@@ -53,6 +54,16 @@ public interface DocumentService {
      * @return
      */
     public Document getNewDocument(Class<? extends Document> documentClass) throws WorkflowException;
+
+    /**
+     * get a new blank document instance based on the document type name. The principal name
+     * passed in will be used as the document initiator.
+     *
+     * @param documentTypeName
+     * @param initiatorPrincipalNm
+     * @return
+     */
+    public Document getNewDocument(String documentTypeName, String initiatorPrincipalNm) throws WorkflowException;
 
     /**
      * get a document based on the document header id which is the primary key for all document types
@@ -172,6 +183,18 @@ public interface DocumentService {
      * @throws WorkflowException
      */
     public Document superUserDisapproveDocument(Document document, String annotation) throws WorkflowException;
+
+    /**
+     * disapprove this document as super user, without saving, optionally providing an annotation which will show up in the route log for this document
+     * for this action taken
+     *
+     * @param document
+     * @param annotation
+     * @return
+     * @throws WorkflowException
+     */
+    public Document superUserDisapproveDocumentWithoutSaving(Document document, String annotation) throws WorkflowException;
+
 
     /**
      * disapprove this document, optionally providing an annotation for the disapproval which will show up in the route log for the
@@ -296,4 +319,11 @@ public interface DocumentService {
      */
     public Document completeDocument(Document document, String annotation, List adHocRecipients) throws WorkflowException;
 
+    /**
+     * Helper method used to save and validate a document
+     *
+     * @param document Document
+     * @param event KualiDocumentEvent
+     */
+    public Document validateAndPersistDocument(Document document, KualiDocumentEvent event) throws ValidationException;
 }

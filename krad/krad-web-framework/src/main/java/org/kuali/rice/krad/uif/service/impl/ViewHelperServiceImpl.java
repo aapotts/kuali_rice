@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@ import org.kuali.rice.krad.util.KRADConstants;
 import org.kuali.rice.krad.util.ObjectUtils;
 import org.kuali.rice.krad.valuefinder.ValueFinder;
 import org.kuali.rice.krad.web.form.UifFormBase;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.MethodInvoker;
 
 import java.io.Serializable;
@@ -825,7 +826,7 @@ public class ViewHelperServiceImpl implements ViewHelperService, Serializable {
                         user);
                 if (!canUnmaskValue) {
                     dataField.setApplyValueMask(true);
-                    dataField.setMaskFormatter(dataField.getComponentSecurity().getAttributeSecurity().
+                    dataField.setMaskFormatter(dataField.getDataFieldSecurity().getAttributeSecurity().
                             getMaskFormatter());
                 } else {
                     // check partial mask authorization
@@ -834,7 +835,7 @@ public class ViewHelperServiceImpl implements ViewHelperService, Serializable {
                     if (!canPartiallyUnmaskValue) {
                         dataField.setApplyValueMask(true);
                         dataField.setMaskFormatter(
-                                dataField.getComponentSecurity().getAttributeSecurity().getPartialMaskFormatter());
+                                dataField.getDataFieldSecurity().getAttributeSecurity().getPartialMaskFormatter());
                     }
                 }
             }
@@ -1545,7 +1546,12 @@ public class ViewHelperServiceImpl implements ViewHelperService, Serializable {
             }
 
             // TODO: this should go through our formatters
-            ObjectPropertyUtils.setPropertyValue(object, bindingPath, defaultValue);
+            // Skip nullable non-null non-empty objects when setting default
+            Object currentValue = ObjectPropertyUtils.getPropertyValue(object, bindingPath);
+            Class currentClazz = ObjectPropertyUtils.getPropertyType(object, bindingPath);
+            if(currentValue == null || StringUtils.isBlank(currentValue.toString()) || ClassUtils.isPrimitiveOrWrapper(currentClazz)) {
+                ObjectPropertyUtils.setPropertyValue(object, bindingPath, defaultValue);
+            }
         }
     }
 

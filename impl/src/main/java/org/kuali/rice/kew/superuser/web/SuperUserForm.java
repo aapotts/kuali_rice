@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.kuali.rice.kew.actionrequest.ActionRequestValue;
 import org.kuali.rice.kew.api.KewApiServiceLocator;
 import org.kuali.rice.kew.doctype.bo.DocumentType;
 import org.kuali.rice.kew.routeheader.DocumentRouteHeaderValue;
+import org.kuali.rice.kew.service.KEWServiceLocator;
 import org.kuali.rice.kew.web.KewRoutingKualiForm;
 
 import javax.servlet.http.HttpServletRequest;
@@ -197,6 +198,19 @@ public class SuperUserForm extends KewRoutingKualiForm {
             return false;
         }
         return true;
+    }
+
+    public boolean isSuperUserFinalApproveAllowed() {
+        return getDocumentType().getAllowSuperUserFinalApprovalPolicy().getPolicyValue().booleanValue();
+    }
+
+    public boolean isSuperUserFinalApproveAllowedForActionRequest() {
+        if (!isSuperUserFinalApproveAllowed() &&
+            KEWServiceLocator.getRouteNodeService().findFutureNodeNames(getRouteHeader().getDocumentId()).isEmpty()) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public DocumentType getDocumentType() {

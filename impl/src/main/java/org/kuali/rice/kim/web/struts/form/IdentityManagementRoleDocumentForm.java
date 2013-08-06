@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public class IdentityManagementRoleDocumentForm extends IdentityManagementDocume
 	protected boolean canAssignRole = true;
 	protected boolean canModifyAssignees = true;
 	protected KimType kimType;
+    protected String memberSearchValue;
 
     //kim type id
     protected String id;
@@ -339,5 +340,19 @@ public class IdentityManagementRoleDocumentForm extends IdentityManagementDocume
 	public void setDmrmi(String dmrmi) {
 		this.dmrmi = dmrmi;
 	}
+
+    /**
+     * @return the memberSearchValue
+     */
+    public String getMemberSearchValue() {
+        return this.memberSearchValue;
+    }
+
+    /**
+     * @param memberSearchValue the memberSearchValue to set
+     */
+    public void setMemberSearchValue(String memberSearchValue) {
+        this.memberSearchValue = memberSearchValue;
+    }
 
 }

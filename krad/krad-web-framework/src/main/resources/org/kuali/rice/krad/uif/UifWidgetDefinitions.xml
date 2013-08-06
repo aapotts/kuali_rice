@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -196,11 +196,6 @@
     <property name="displayPassedHistory" value="true"/>
     <property name="displayBreadcrumbsWhenOne" value="false"/>
     <property name="styleClasses" value="uif-breadcrumbs"/>
-    <property name="homewardPathList">
-      <list>
-        <bean parent="Uif-HistoryEntry" p:title="Home" p:url="@{#ConfigProperties['application.url']}/portal.do"/>
-      </list>
-    </property>
   </bean>
 
   <!-- Growls default settings -->

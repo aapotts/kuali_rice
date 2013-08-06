@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.kuali.rice.kew.rule;
 
 import org.kuali.rice.kim.api.group.Group;
 import org.kuali.rice.kim.api.services.KimApiServiceLocator;
+import org.kuali.rice.kim.impl.group.GroupBo;
 
 /**
  * This is a description of what this class does - ewestfal don't forget to fill this in.
@@ -53,4 +54,16 @@ public class GroupRuleResponsibility extends RuleResponsibilityBo {
         }
         return this.group;
 	}
+
+    public GroupBo getGroupBo() {
+        Group grp = null;
+        if (isUsingGroup()) {
+            grp = KimApiServiceLocator.getGroupService().getGroupByNamespaceCodeAndName(getNamespaceCode(),getName());
+        }
+        if(null != grp){
+            return GroupBo.from(grp);
+        }  else {
+            return null;
+        }
+    }
 }

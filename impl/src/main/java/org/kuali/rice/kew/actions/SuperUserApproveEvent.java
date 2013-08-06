@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class SuperUserApproveEvent extends SuperUserActionTakenEvent {
 
 		DocumentType docType = getRouteHeader().getDocumentType();
 
-        String errorMessage = super.validateActionRules();
+        String errorMessage = validateActionRules();
         if (!org.apache.commons.lang.StringUtils.isEmpty(errorMessage)) {
             LOG.info("User not authorized");
             List<WorkflowServiceErrorImpl> errors = new ArrayList<WorkflowServiceErrorImpl>();

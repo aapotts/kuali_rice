@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,12 @@
  */
 package org.kuali.rice.kew.actions;
 
-import org.apache.cxf.common.util.StringUtils;
-import org.kuali.rice.kew.actionrequest.*;
+import org.apache.commons.lang.StringUtils;
+import org.kuali.rice.kew.actionrequest.ActionRequestFactory;
+import org.kuali.rice.kew.actionrequest.ActionRequestValue;
+import org.kuali.rice.kew.actionrequest.KimGroupRecipient;
+import org.kuali.rice.kew.actionrequest.KimPrincipalRecipient;
+import org.kuali.rice.kew.actionrequest.Recipient;
 import org.kuali.rice.kew.engine.node.RouteNodeInstance;
 import org.kuali.rice.kew.api.exception.InvalidActionTakenException;
 import org.kuali.rice.kew.routeheader.DocumentRouteHeaderValue;
@@ -96,12 +100,12 @@ public class AdHocAction extends ActionTakenEvent {
     	if (recipient != null) {
     		if (recipient instanceof KimPrincipalRecipient) {
     			KimPrincipalRecipient principalRecipient = (KimPrincipalRecipient)recipient;
-    			if (!KEWServiceLocator.getDocumentTypePermissionService().canReceiveAdHocRequest(principalRecipient.getPrincipalId(), getRouteHeader().getDocumentType(), actionRequested)) {
+    			if (!KEWServiceLocator.getDocumentTypePermissionService().canReceiveAdHocRequest(principalRecipient.getPrincipalId(), getRouteHeader(), actionRequested)) {
     				return "The principal '" + principalRecipient.getPrincipal().getPrincipalName() + "' does not have permission to recieve ad hoc requests on DocumentType '" + getRouteHeader().getDocumentType().getName() + "'";
     			}
     		} else if (recipient instanceof KimGroupRecipient) {
     			Group group = ((KimGroupRecipient)recipient).getGroup();
-    			if (!KEWServiceLocator.getDocumentTypePermissionService().canGroupReceiveAdHocRequest("" + group.getId(), getRouteHeader().getDocumentType(), actionRequested)) {
+    			if (!KEWServiceLocator.getDocumentTypePermissionService().canGroupReceiveAdHocRequest("" + group.getId(), getRouteHeader(), actionRequested)) {
     				return "The group '" + group.getName() + "' does not have permission to recieve ad hoc requests on DocumentType '" + getRouteHeader().getDocumentType().getName() + "'";
     			}
     		} else {
@@ -122,7 +126,7 @@ public class AdHocAction extends ActionTakenEvent {
             if (nodeName == null || routeNode.getName().equals(nodeName))
             {
                 String message = createAdHocRequest(routeNode, forValidationOnly);
-                if (!StringUtils.isEmpty(message))
+                if (StringUtils.isNotBlank(message))
                 {
                     return message;
                 }
@@ -136,7 +140,7 @@ public class AdHocAction extends ActionTakenEvent {
         
         if (!requestCreated && targetNodes.isEmpty()) {
             String message = createAdHocRequest(null, forValidationOnly);
-            if (!StringUtils.isEmpty(message)) {
+            if (StringUtils.isNotBlank(message)) {
                 return message;
             }
             requestCreated = true;

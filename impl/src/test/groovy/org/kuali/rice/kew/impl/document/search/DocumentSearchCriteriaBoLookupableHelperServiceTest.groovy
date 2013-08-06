@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,9 @@ import org.joda.time.DateTime
 import org.kuali.rice.krad.util.GlobalVariables
 import org.kuali.rice.krad.UserSession
 import java.util.concurrent.Callable
+import org.kuali.rice.kew.doctype.service.DocumentTypeService
+import org.kuali.rice.kew.service.KEWServiceLocator
+import org.kuali.rice.core.api.config.module.RunMode
 
 /**
  * Tests parsing of document search criteria form
@@ -72,6 +75,18 @@ class DocumentSearchCriteriaBoLookupableHelperServiceTest {
             },
             stop: {}
         ] as ResourceLoader)
+
+        DocumentTypeService documentTypeService = { null } as DocumentTypeService;
+
+        GlobalResourceLoader.addResourceLoader([
+                getName: { -> new QName("Baz", "Bif") },
+                getService: { QName name ->
+                    [ enDocumentTypeService: documentTypeService ][name.getLocalPart()]
+                },
+                stop: {}
+        ] as ResourceLoader)
+
+        ConfigContext.getCurrentContextConfig().putProperty(KEWServiceLocator.KEW_RUN_MODE_PROPERTY, RunMode.LOCAL.name())
     }
 
 

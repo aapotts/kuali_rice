@@ -1,5 +1,5 @@
 /*
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 var ADD = '.kr-add-button';
 var CUT='.kr-cut-button';
 var PASTE='.kr-paste-button';
+var DELETE='.kr-delete-button';
 var REFRESH='.kr-refresh-button';
 var TREE = '.tree-bar-button';
 
@@ -51,6 +52,10 @@ function enableAddButton() {
 function enablePasteButton() {
     pasting = true;
     enableButton(PASTE);
+}
+
+function enableDeleteButton() {
+    enableButton(DELETE);
 }
 
 function enableRefreshButton() {
@@ -91,11 +96,18 @@ function cutPasteButtonInit() {
 
 
 function propButtonsInit() {
-    cutPasteButtonInit();
     disableTreeButtons();
-    enableAddButton();
-    enableRefreshButton();
-    selectedPropCheck();
+
+    if (propositionAddInProgress()) {
+        disablePasteButton();
+        enableDeleteButton();
+    } else {
+        cutPasteButtonInit();
+        enableAddButton();
+        enableRefreshButton();
+        selectedCheck();
+        selectedPropCheck();
+    }
 }
 
 var onProp = false;
@@ -156,14 +168,9 @@ function selectedPropCheck() {
     }
 }
 
-jq(document).ready(function() {
+function loadControlsInit() {
     if (ENABLED) {
-        cutPasteButtonInit();
         disablePasteButton();
-        disableTreeButtons();
-        enableAddButton();
-        enableRefreshButton();
-        selectedCheck();
+        propButtonsInit();
     }
-});
-
+}

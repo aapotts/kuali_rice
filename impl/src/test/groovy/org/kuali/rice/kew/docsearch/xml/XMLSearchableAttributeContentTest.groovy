@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.kuali.rice.kew.docsearch.xml
 
 import javax.xml.namespace.QName
@@ -38,6 +37,7 @@ import org.kuali.rice.kew.api.KewApiConstants
 import org.kuali.rice.kew.api.extension.ExtensionDefinition
 import org.kuali.rice.kim.api.KimConstants
 import org.apache.commons.lang.StringUtils
+import org.kuali.rice.kim.api.group.GroupService
 
 /**
  *
@@ -57,6 +57,8 @@ class XMLSearchableAttributeContentTest {
             getService: { QName name ->
                 [
                     parameterService: [ getParameterValueAsString: { s0,s1,s2 -> null } ] as ParameterService,
+                    kimGroupService: [ getGroupByNamespaceCodeAndName: {a,b -> null } ] as GroupService,
+
                 ][name.getLocalPart()]
             },
             stop: {}

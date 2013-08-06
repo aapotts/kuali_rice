@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,8 @@ public class BusinessObjectEntry extends DataObjectEntry {
     }
 
     /**
-     * The baseBusinessObjectClass is an optional parameter for specifying a superclass
-     * for the dataObjectClass, allowing the data dictionary to index by superclass
+     * The baseBusinessObjectClass is an optional parameter for specifying a base class
+     * for the dataObjectClass, allowing the data dictionary to index by the base class
      * in addition to the current class.
      */
 
@@ -71,11 +71,6 @@ public class BusinessObjectEntry extends DataObjectEntry {
     @Override
     public void completeValidation() {
         try {
-
-            if (baseBusinessObjectClass != null && !baseBusinessObjectClass.isAssignableFrom(getDataObjectClass())) {
-                throw new ClassValidationException("The baseBusinessObjectClass " + baseBusinessObjectClass.getName() +
-                        " is not a superclass of the dataObjectClass " + getDataObjectClass().getName());
-            }
 
             super.completeValidation();
 

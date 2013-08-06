@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -50,7 +50,11 @@
                 <listitem>
                     <para><emphasis role="bold">Release Notes</emphasis> (<link xlink:show="new"
                             xlink:href="release-notes.html">HTML</link> / <link xlink:show="new"
-                            xlink:href="../pdf/release-notes.pdf">PDF</link> ) - list of changes </para>
+                            xlink:href="../pdf/release-notes.pdf">PDF</link> ) - List of changes </para>
+                    <itemizedlist><listitem><para><link xlink:show="new"
+                                    xlink:href="https://wiki.kuali.org/display/KULRICE/Post-2.0+impacting+changes"
+                                    >Impacting Changes</link> - List of major impacting changes post
+                                2.0 release</para></listitem></itemizedlist>
                 </listitem>
                 <listitem>
                     <para><emphasis role="bold">Installation Guide</emphasis> (<link
@@ -99,8 +103,9 @@
                             since the size of the diagrams may be illegible in IE.</para>
 
                         <!-- https://wiki.kuali.org/display/KULRICE/Schema+Spy+Publish+to+site.kuali.org -->
+                        <!-- hard code to last version of 2.1 Schema Spy was run on -->
                         <listitem>
-                            <para><link xlink:show="new" xlink:href="../html/schema-spy/index.html">Schema Spy</link></para>
+                            <para><link xlink:show="new" xlink:href="http://site.kuali.org/rice/2.1.1/reference/html/schema-spy/index.html">Schema Spy</link></para>
                         </listitem>
 
 <!-- TODO: regenerate and add back in

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.kuali.rice.kim.api.type.KimTypeAttribute;
 import org.kuali.rice.kim.api.type.KimTypeInfoService;
 import org.kuali.rice.kim.framework.type.KimTypeService;
 import org.kuali.rice.kns.lookup.LookupUtils;
+import org.kuali.rice.kns.service.KNSServiceLocator;
 import org.kuali.rice.kns.util.FieldUtils;
 import org.kuali.rice.kns.web.ui.Field;
 import org.kuali.rice.krad.bo.BusinessObject;
@@ -47,7 +48,7 @@ import org.kuali.rice.krad.datadictionary.PrimitiveAttributeDefinition;
 import org.kuali.rice.krad.datadictionary.RelationshipDefinition;
 import org.kuali.rice.krad.service.BusinessObjectService;
 import org.kuali.rice.krad.service.DataDictionaryService;
-import org.kuali.rice.krad.service.DictionaryValidationService;
+import org.kuali.rice.kns.service.DictionaryValidationService;
 import org.kuali.rice.krad.service.KRADServiceLocator;
 import org.kuali.rice.krad.service.KRADServiceLocatorWeb;
 import org.kuali.rice.krad.service.ModuleService;
@@ -66,7 +67,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -579,14 +579,14 @@ public class DataDictionaryTypeServiceBase implements KimTypeService {
                     throw new KimTypeAttributeException(e);
                 }
 
-                String baseLookupUrl = LookupUtils.getBaseLookupUrl(false) + "?methodToCall=start&";
+                String baseLookupUrl = LookupUtils.getBaseLookupUrl(false) + "?methodToCall=start";
 
                 if (ExternalizableBusinessObjectUtils.isExternalizableBusinessObject(lookupClass)) {
                     ModuleService moduleService = KRADServiceLocatorWeb.getKualiModuleService().getResponsibleModuleService(lookupClass);
                     if (moduleService.isExternalizableBusinessObjectLookupable(lookupClass)) {
-                        baseLookupUrl = moduleService.getExternalizableDataObjectLookupUrl(lookupClass, new Properties());
+                        baseLookupUrl = moduleService.getExternalizableBusinessObjectLookupUrl(lookupClass, Collections.<String,String>emptyMap());
                         // XXX: I'm not proud of this:
-                        baseLookupUrl = baseLookupUrl.substring(0,baseLookupUrl.indexOf("?")) + "?methodToCall=start&";
+                        baseLookupUrl = baseLookupUrl.substring(0,baseLookupUrl.indexOf("?")) + "?methodToCall=start";
                     }
                 }
 
@@ -615,6 +615,9 @@ public class DataDictionaryTypeServiceBase implements KimTypeService {
 	protected KimAttributeField getNonDataDictionaryAttributeDefinition(String namespaceCode, String kimTypeId, KimTypeAttribute typeAttribute, List<String> uniqueAttributes) {
 		RemotableAttributeField.Builder field = RemotableAttributeField.Builder.create(typeAttribute.getKimAttribute().getAttributeName());
 		field.setLongLabel(typeAttribute.getKimAttribute().getAttributeLabel());
+
+        //KULRICE-9143 shortLabel must be set for KIM to render attribute
+        field.setShortLabel(typeAttribute.getKimAttribute().getAttributeLabel());
 
         KimAttributeField.Builder definition = KimAttributeField.Builder.create(field, typeAttribute.getKimAttribute().getId());
 
@@ -829,7 +832,7 @@ public class DataDictionaryTypeServiceBase implements KimTypeService {
 
 	protected DictionaryValidationService getDictionaryValidationService() {
 		if ( dictionaryValidationService == null ) {
-			dictionaryValidationService = KRADServiceLocatorWeb.getDictionaryValidationService();
+			dictionaryValidationService = KNSServiceLocator.getKNSDictionaryValidationService();
 		}
 		return dictionaryValidationService;
 	}

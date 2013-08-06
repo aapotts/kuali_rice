@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ package org.kuali.rice.kim.impl.type;
 import org.apache.commons.lang.StringUtils;
 import org.kuali.rice.core.api.exception.RiceRemoteServiceConnectionException;
 import org.kuali.rice.kew.api.KewApiConstants;
+import org.kuali.rice.kew.doctype.bo.DocumentType;
+import org.kuali.rice.kew.doctype.service.DocumentTypeService;
+import org.kuali.rice.kew.routeheader.service.WorkflowDocumentService;
+import org.kuali.rice.kew.service.KEWServiceLocator;
 import org.kuali.rice.kim.api.KimConstants;
 import org.kuali.rice.kim.api.services.KimApiServiceLocator;
 import org.kuali.rice.kim.api.type.KimType;
@@ -29,15 +33,18 @@ import org.kuali.rice.kim.util.KimCommonUtilsInternal;
 import org.kuali.rice.kns.lookup.KualiLookupableHelperServiceImpl;
 import org.kuali.rice.kns.web.struts.form.LookupForm;
 import org.kuali.rice.krad.bo.BusinessObject;
+import org.kuali.rice.krad.service.KRADServiceLocator;
 import org.kuali.rice.krad.util.KRADConstants;
 import org.kuali.rice.krad.util.UrlFactory;
 import org.springframework.remoting.RemoteAccessException;
 
+import javax.xml.ws.WebServiceException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+/**
 /**
  * @author Kuali Rice Team (rice.collab@kuali.org)
  *
@@ -51,6 +58,12 @@ public class KimTypeLookupableHelperServiceImpl extends KualiLookupableHelperSer
 	protected List<? extends BusinessObject> getSearchResultsHelper(Map<String, String> fieldValues, boolean unbounded) {
 		List<KimTypeBo> searchResults = (List<KimTypeBo>)super.getSearchResultsHelper(fieldValues, unbounded);
 		List<KimTypeBo> filteredSearchResults = new ArrayList<KimTypeBo>();
+        DocumentTypeService dts = KEWServiceLocator.getDocumentTypeService();
+        DocumentType st = dts.findByDocumentId(fieldValues.get(KRADConstants.DOC_NUM));
+        String docName = "";
+        if (st!=null) {
+            docName = st.getName();
+        }
 		if(KimConstants.KimUIConstants.KIM_ROLE_DOCUMENT_SHORT_KEY.equals(fieldValues.get(KRADConstants.DOC_FORM_KEY))) {
 			for(KimTypeBo kimTypeBo: searchResults){
 				if(hasRoleTypeService(KimTypeBo.to(kimTypeBo))) {
@@ -59,8 +72,7 @@ public class KimTypeLookupableHelperServiceImpl extends KualiLookupableHelperSer
 			}
 			return filteredSearchResults;
 		}
-		
-		if(KimConstants.KimUIConstants.KIM_GROUP_DOCUMENT_SHORT_KEY.equals(fieldValues.get(KRADConstants.DOC_FORM_KEY))) {
+        if(KimConstants.KimUIConstants.KIM_GROUP_DOCUMENT_TYPE_NAME.equals(docName)) {
 			for(KimTypeBo kimTypeBo: searchResults){
 				if(hasGroupTypeService(KimTypeBo.to(kimTypeBo))) {
 					filteredSearchResults.add(kimTypeBo);
@@ -131,19 +143,20 @@ public class KimTypeLookupableHelperServiceImpl extends KualiLookupableHelperSer
 		boolean hasDerivedRoleTypeService = false;
 		KimTypeService kimTypeService = KimFrameworkServiceLocator.getKimTypeService(kimType);
 		//it is possible that the the roleTypeService is coming from a remote application 
-	    // and therefore it can't be guarenteed that it is up and working, so using a try/catch to catch this possibility.
+	    // and therefore it can't be guaranteed that it is up and working, so using a try/catch to catch this possibility.
 		try {
-		    if(hasRoleTypeService(kimType, kimTypeService))
+		    if(hasRoleTypeService(kimType, kimTypeService)) {
 		        hasDerivedRoleTypeService = (kimType.getServiceName()!=null && ((RoleTypeService)kimTypeService).isDerivedRoleType());
+            }
 		} catch (RiceRemoteServiceConnectionException ex) {
 			LOG.warn("Not able to retrieve KimTypeService from remote system for KIM Type: " + kimType.getName(), ex);
-		    return hasDerivedRoleTypeService;
 		}
 		// KULRICE-4403: catch org.springframework.remoting.RemoteAccessException
 		catch (RemoteAccessException rae) {
 			LOG.warn("Not able to retrieve KimTypeService from remote system for KIM Type: " + kimType.getName(), rae);
-			return hasDerivedRoleTypeService;
-		}
+		} catch (WebServiceException e) {
+            LOG.warn("Not able to retrieve KimTypeService from remote system for KIM Type: " + kimType.getName(), e);
+        }
 		return hasDerivedRoleTypeService;
 	}
 

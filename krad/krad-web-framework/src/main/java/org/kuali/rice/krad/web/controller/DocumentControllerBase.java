@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,12 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kuali.rice.core.api.config.property.ConfigurationService;
 import org.kuali.rice.core.api.exception.RiceRuntimeException;
-import org.kuali.rice.core.api.mail.MailMessage;
 import org.kuali.rice.core.api.util.RiceKeyConstants;
-import org.kuali.rice.coreservice.framework.CoreFrameworkServiceLocator;
-import org.kuali.rice.coreservice.framework.parameter.ParameterConstants;
 import org.kuali.rice.kew.api.KewApiConstants;
 import org.kuali.rice.kew.api.WorkflowDocument;
 import org.kuali.rice.kew.api.exception.WorkflowException;
 import org.kuali.rice.kim.api.identity.Person;
+import org.kuali.rice.krad.UserSessionUtils;
 import org.kuali.rice.krad.bo.AdHocRouteRecipient;
 import org.kuali.rice.krad.bo.Attachment;
 import org.kuali.rice.krad.bo.DocumentHeader;
@@ -45,7 +43,6 @@ import org.kuali.rice.krad.service.DocumentDictionaryService;
 import org.kuali.rice.krad.service.DocumentService;
 import org.kuali.rice.krad.service.KRADServiceLocator;
 import org.kuali.rice.krad.service.KRADServiceLocatorWeb;
-import org.kuali.rice.krad.service.MailService;
 import org.kuali.rice.krad.service.NoteService;
 import org.kuali.rice.krad.uif.UifConstants.WorkflowAction;
 import org.kuali.rice.krad.uif.UifParameters;
@@ -53,7 +50,6 @@ import org.kuali.rice.krad.uif.UifPropertyPaths;
 import org.kuali.rice.krad.uif.container.CollectionGroup;
 import org.kuali.rice.krad.uif.util.ObjectPropertyUtils;
 import org.kuali.rice.krad.util.GlobalVariables;
-import org.kuali.rice.krad.util.IPMatcher;
 import org.kuali.rice.krad.util.KRADConstants;
 import org.kuali.rice.krad.util.NoteType;
 import org.kuali.rice.krad.web.form.DocumentFormBase;
@@ -73,7 +69,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -131,7 +126,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
             createDocument(form);
         } else {
             LOG.error("docHandler called with invalid parameters");
-            throw new IllegalStateException("docHandler called with invalid parameters");
+            throw new IllegalArgumentException("docHandler called with invalid parameters");
         }
 
         // TODO: authorization on document actions
@@ -178,8 +173,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
         WorkflowDocument workflowDoc = doc.getDocumentHeader().getWorkflowDocument();
         form.setDocTypeName(workflowDoc.getDocumentTypeName());
 
-        KRADServiceLocatorWeb.getSessionDocumentService().addDocumentToUserSession(GlobalVariables.getUserSession(),
-                workflowDoc);
+        UserSessionUtils.addWorkflowDocument(GlobalVariables.getUserSession(), workflowDoc);
     }
 
     /**
@@ -234,7 +228,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
 
         // TODO: prompt user to confirm the cancel, need question framework
 
-        performWorkflowAction(documentForm, WorkflowAction.CANCEL, false, request);
+        performWorkflowAction(documentForm, WorkflowAction.CANCEL, false);
 
         return returnToPrevious(form);
     }
@@ -248,7 +242,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
     @RequestMapping(params = "methodToCall=save")
     public ModelAndView save(@ModelAttribute("KualiForm") DocumentFormBase form, BindingResult result,
             HttpServletRequest request, HttpServletResponse response) throws Exception {
-        performWorkflowAction(form, WorkflowAction.SAVE, true, request);
+        performWorkflowAction(form, WorkflowAction.SAVE, true);
 
         return getUIFModelAndView(form);
     }
@@ -262,7 +256,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
     @RequestMapping(params = "methodToCall=complete")
     public ModelAndView complete(@ModelAttribute("KualiForm")
     DocumentFormBase form, BindingResult result, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        performWorkflowAction(form, WorkflowAction.COMPLETE, true, request);
+        performWorkflowAction(form, WorkflowAction.COMPLETE, true);
 
         return getUIFModelAndView(form);
     }
@@ -276,7 +270,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
     @RequestMapping(params = "methodToCall=route")
     public ModelAndView route(@ModelAttribute("KualiForm") DocumentFormBase form, BindingResult result,
             HttpServletRequest request, HttpServletResponse response) {
-        performWorkflowAction(form, WorkflowAction.ROUTE, true, request);
+        performWorkflowAction(form, WorkflowAction.ROUTE, true);
 
         return getUIFModelAndView(form);
     }
@@ -290,7 +284,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
     @RequestMapping(params = "methodToCall=blanketApprove")
     public ModelAndView blanketApprove(@ModelAttribute("KualiForm") DocumentFormBase form, BindingResult result,
             HttpServletRequest request, HttpServletResponse response) throws Exception {
-        performWorkflowAction(form, WorkflowAction.BLANKETAPPROVE, true, request);
+        performWorkflowAction(form, WorkflowAction.BLANKETAPPROVE, true);
 
         return returnToPrevious(form);
     }
@@ -304,7 +298,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
     @RequestMapping(params = "methodToCall=approve")
     public ModelAndView approve(@ModelAttribute("KualiForm") DocumentFormBase form, BindingResult result,
             HttpServletRequest request, HttpServletResponse response) throws Exception {
-        performWorkflowAction(form, WorkflowAction.APPROVE, true, request);
+        performWorkflowAction(form, WorkflowAction.APPROVE, true);
 
         return returnToPrevious(form);
     }
@@ -319,7 +313,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
     public ModelAndView disapprove(@ModelAttribute("KualiForm") DocumentFormBase form, BindingResult result,
             HttpServletRequest request, HttpServletResponse response) throws Exception {
         // TODO: need to prompt for disapproval note text
-        performWorkflowAction(form, WorkflowAction.DISAPPROVE, true, request);
+        performWorkflowAction(form, WorkflowAction.DISAPPROVE, true);
 
         return returnToPrevious(form);
     }
@@ -333,7 +327,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
     @RequestMapping(params = "methodToCall=fyi")
     public ModelAndView fyi(@ModelAttribute("KualiForm") DocumentFormBase form, BindingResult result,
             HttpServletRequest request, HttpServletResponse response) throws Exception {
-        performWorkflowAction(form, WorkflowAction.FYI, false, request);
+        performWorkflowAction(form, WorkflowAction.FYI, false);
 
         return returnToPrevious(form);
     }
@@ -347,7 +341,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
     @RequestMapping(params = "methodToCall=acknowledge")
     public ModelAndView acknowledge(@ModelAttribute("KualiForm") DocumentFormBase form, BindingResult result,
             HttpServletRequest request, HttpServletResponse response) throws Exception {
-        performWorkflowAction(form, WorkflowAction.ACKNOWLEDGE, false, request);
+        performWorkflowAction(form, WorkflowAction.ACKNOWLEDGE, false);
 
         return returnToPrevious(form);
     }
@@ -360,7 +354,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
      * @param action - {@link WorkflowAction} enum indicating what workflow action to take
      * @param checkSensitiveData - boolean indicating whether a check for sensitive data should occur
      */
-    protected void performWorkflowAction(DocumentFormBase form, WorkflowAction action, boolean checkSensitiveData, HttpServletRequest request) {
+    protected void performWorkflowAction(DocumentFormBase form, WorkflowAction action, boolean checkSensitiveData) {
         Document document = form.getDocument();
 
         LOG.debug("Performing workflow action " + action.name() + "for document: " + document.getDocumentNumber());
@@ -374,61 +368,6 @@ public abstract class DocumentControllerBase extends UifControllerBase {
             //        }
         }
 
-        // AAP: customization for IP tracking
-        boolean logRemoteAddress = CoreFrameworkServiceLocator.getParameterService().getParameterValueAsBoolean(
-                KRADConstants.KUALI_RICE_SYSTEM_NAMESPACE, ParameterConstants.ALL_COMPONENT,
-                "REMOTE_ADDRESS_TRACKING");
-        
-        if (logRemoteAddress) {
-            String ipAddress = (request == null) ? "LOCALHOST" : request.getRemoteAddr();
-            // check for warning IP address
-            Collection<String> ipRanges = CoreFrameworkServiceLocator.getParameterService().getParameterValuesAsString(
-                    KRADConstants.KUALI_RICE_SYSTEM_NAMESPACE, ParameterConstants.ALL_COMPONENT,
-                    "REMOTE_ADDRESS_BAD_IPS");
-            boolean addIpWarning = false;
-            for (String ipRange : ipRanges) {
-                IPMatcher ipMatcher = new IPMatcher(ipRange);
-                if (ipMatcher.match(ipAddress)) {
-                    addIpWarning = true;
-                    break;
-                }
-                
-            }
-            if (addIpWarning) {
-                LOG.warn("Performing workflow action " + action.name() + "for document: " + document.getDocumentNumber() + " from IP address: " + ipAddress + " WARNING: Potentially dangerous IP address detected");
-                form.setAnnotation(form.getAnnotation().concat(" (Action taken from IP Address: " + ipAddress + " WARNING: Potentially dangerous IP address detected)"));
-                // send email to warning list
-                Collection<String> warningEmailRecipients = CoreFrameworkServiceLocator.getParameterService().getParameterValuesAsString(
-                        KRADConstants.KUALI_RICE_SYSTEM_NAMESPACE, ParameterConstants.ALL_COMPONENT,
-                        "REMOTE_ADDRESS_BAD_IP_EMAIL");
-                MailService mailService = KRADServiceLocator.getMailService();
-                Person kualiUser = GlobalVariables.getUserSession().getPerson();
-                String principalId;
-                if (kualiUser == null) {
-                    principalId = "SYSTEM USER";
-                } else {
-                    principalId = kualiUser.getPrincipalId() ;
-                }
-                MailMessage message = new MailMessage();
-                for (String email : warningEmailRecipients) {
-                    message.addToAddress(email);
-                }
-                message.setSubject("Kuali IP Address Warning");
-                message.setMessage("User:" + principalId + " Performing workflow action " + action.name() + "for document: " + document.getDocumentNumber() + " from IP address: " + ipAddress + " WARNING: Potentially dangerous IP address detected");
-                try {
-                    mailService.sendMessage(message);
-                } catch (Exception e) {
-                    // TODO: handle exception
-                }
-                
-            } else {
-                LOG.warn("Performing workflow action " + action.name() + "for document: " + document.getDocumentNumber() + " from IP address: " + ipAddress);
-                form.setAnnotation(form.getAnnotation().concat(" (Action taken from IP Address: " + ipAddress + ")"));
-            }
-            
-        }
-        // end AAP changes for ip
-        
         try {
             String successMessageKey = null;
             switch (action) {

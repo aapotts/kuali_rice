@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.kuali.rice</groupId>
     <artifactId>rice-db</artifactId>
-    <version>2.1.1.0-rsmart-SNAPSHOT</version>
+    <version>2.1.7</version>
   </parent>
   <artifactId>rice-impex</artifactId>
   <packaging>pom</packaging>
@@ -274,7 +274,7 @@
         <plugin>
           <groupId>org.kuali.maven.plugins</groupId>
           <artifactId>maven-impex-plugin</artifactId>
-          <version>1.0.26</version>
+          <version>${plugin.impex.version}</version>
           <dependencies>
             <dependency>
               <groupId>${jdbc.groupId}</groupId>
@@ -350,6 +350,75 @@
     </pluginManagement>
   </build>
   <profiles>
+    <profile>
+      <!-- Pre-generate and bundle SQL for Oracle/MySQL during a release -->
+      <id>kuali-release</id>
+      <properties>
+        <impex.basedir>${project.basedir}</impex.basedir>
+        <impex.schema.name>${project.artifactId}</impex.schema.name>
+      </properties>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.kuali.maven.plugins</groupId>
+              <artifactId>mvn-maven-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>sql</id>
+                  <phase>process-resources</phase>
+                  <goals>
+                    <goal>mvn</goal>
+                  </goals>
+                  <configuration>
+                    <args>
+                      <arg>process-resources</arg>
+                    </args>
+                    <poms>
+                      <param>classpath:org/kuali/common/deploy/mvn/impex-with-sql-plus-meta.xml</param>
+                    </poms>
+                    <properties>
+                      <property>impex.basedir</property>
+                      <property>impex.schema.name</property>
+                      <property>plugin.impex.version</property>
+                    </properties>
+                  </configuration>
+                </execution>
+              </executions>
+              <dependencies>
+                <dependency>
+                  <groupId>org.kuali.common</groupId>
+                  <artifactId>kuali-deploy</artifactId>
+                  <version>${kuali-deploy.version}</version>
+                </dependency>
+              </dependencies>
+            </plugin>
+            <plugin>
+              <artifactId>maven-jar-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>sql</id>
+                  <goals>
+                    <goal>jar</goal>
+                  </goals>
+                  <configuration>
+                    <skipIfEmpty>true</skipIfEmpty>
+                    <classesDirectory>${project.build.directory}/impex</classesDirectory>
+                    <classifier>sql</classifier>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.kuali.maven.plugins</groupId>
+            <artifactId>mvn-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>export</id>
       <properties>
@@ -485,8 +554,10 @@
       <id>rds</id>
       <properties>
         <!-- Override for JDK6 and Amazon RDS -->
+
         <oracle.jdbc.artifactId>ojdbc6_g</oracle.jdbc.artifactId>
         <oracle.jdbc.version>11.2.0.2</oracle.jdbc.version>
+
         <impex.url>jdbc:oracle:thin:@oracle.rice.kuali.org:1521:ORACLE</impex.url>
         <impex.dba.url>${impex.url}</impex.dba.url>
         <impex.dba.username>master</impex.dba.username>
@@ -589,7 +660,6 @@
           </plugin>
           <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.6</version>
             <executions>
               <execution>
                 <id>remove-from-scm</id>

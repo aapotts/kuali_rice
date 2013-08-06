@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,7 +161,8 @@ public class SectionBridge {
     			field.setFieldType(Field.HIDDEN);
     			field.setPropertyValue(null);
     		}
-    		else if (fieldRestriction.isMasked()) {
+    		// KULRICE-8271: partially masked field can't be masked properly 
+    		else if (fieldRestriction.isMasked() || fieldRestriction.isPartiallyMasked()) {
             	field.setSecure(true);
             	MaskFormatter maskFormatter = fieldRestriction.getMaskFormatter();
             	String displayMaskValue = maskFormatter.maskValue(field.getPropertyValue());

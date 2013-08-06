@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.kuali.rice.kim.framework.role;
 
 import org.kuali.rice.core.api.exception.RiceIllegalArgumentException;
+import org.kuali.rice.core.api.membership.MemberType;
 import org.kuali.rice.core.api.util.jaxb.MapStringStringAdapter;
 import org.kuali.rice.kim.api.KimConstants;
 import org.kuali.rice.kim.api.role.RoleMembership;
@@ -218,5 +219,13 @@ public interface RoleTypeService extends KimTypeService {
     @XmlElement(name = "name", required = false)
     @WebResult(name = "names")
     List<String> getQualifiersForExactMatch();
-    
+
+    /**
+     * Returns whether a membertype should have its qualifiers validated
+     * @return true if
+     * @since 2.1.2
+     */
+    @WebMethod(operationName="shouldvalidateQualifiersForMemberType")
+    @WebResult(name="validateQualifiers")
+    boolean shouldValidateQualifiersForMemberType(@WebParam(name="memberType") MemberType memberType);
 }

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-  Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
-  Licensed under the Educational Community License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+    Licensed under the Educational Community License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-  http://www.opensource.org/licenses/ecl2.php
+    http://www.opensource.org/licenses/ecl2.php
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -21,14 +21,14 @@
   <parent>
     <groupId>org.kuali.pom</groupId>
     <artifactId>kuali-common</artifactId>
-    <version>1.6.0</version>
+    <version>3.0.9</version>
   </parent>
   <groupId>org.kuali.rice</groupId>
   <artifactId>rice</artifactId>
   <packaging>pom</packaging>
   <name>Rice</name>
   <inceptionYear>2005</inceptionYear>
-  <version>2.1.1.0-rsmart-SNAPSHOT</version>
+  <version>2.1.7</version>
   <description>
     The Kuali Rice effort provides an enterprise class middleware suite of integrated products that allows
     both Kuali and non-Kuali applications
@@ -46,6 +46,7 @@
   </ciManagement>
 
   <properties>
+    <properties.resolve>false</properties.resolve>
     <!-- These properties modify the release process -->
     <kuali.release.prepare.goals>clean</kuali.release.prepare.goals>
     <kuali.release.goals>deploy</kuali.release.goals>
@@ -94,7 +95,18 @@
     <commons-pool.version>1.5.7</commons-pool.version>
     <commons-validator.version>1.3.1</commons-validator.version>
     <connector-api.version>1.5</connector-api.version>
-    <cxf.version>2.3.8</cxf.version>
+    <cxf.version>2.7.0</cxf.version>
+    <jaxb-impl.version>2.2.6</jaxb-impl.version>
+    <!--
+      There appears to be a problem with the 2.2.5 version of jaxb-impl which cxf 2.7.0 depends on by default.
+      Get the following exception when attempting to run cxf-java2ws-plugin on services that use certain Enums:
+
+      java.lang.ClassCastException: com.sun.xml.bind.v2.model.impl.RuntimeEnumLeafInfoImpl cannot be cast to com.sun.xml.bind.v2.model.impl.ClassInfoImpl
+
+      One of the specific offenders here is WorkflowDocumentService and it's use of DocumentStatus enum.
+      Switching to the 2.1-based verson of jaxb-impl version 2.1.13 causes the problem to go away.
+    -->
+    <cxf-java2ws-plugin.jaxb-impl.version>2.1.13</cxf-java2ws-plugin.jaxb-impl.version>
     <db-ojb.version>1.0.4-patch8</db-ojb.version>
     <displaytag.version>1.2</displaytag.version>
     <dom4j.version>1.6.1</dom4j.version>
@@ -104,17 +116,17 @@
     <groovy.version>1.8.5</groovy.version>
     <guava.version>11.0</guava.version>
     <hibernate.version>3.6.9.Final</hibernate.version>
+    <kuali-mvn.version>1.0.2</kuali-mvn.version>
     <mail.version>1.4.4</mail.version>
     <jackson.version>1.8.8</jackson.version>
     <javassist.version>3.15.0-GA</javassist.version>
     <javax.inject.version>1</javax.inject.version>
     <jaxen.version>1.1.3</jaxen.version>
     <jdom.version>1.1</jdom.version>
-    <jetty.version>7.5.1.v20110908</jetty.version>
+    <jetty.version>8.1.7.v20120910</jetty.version>
     <joda-time.version>2.0</joda-time.version>
     <joda-time-jsptags.version>1.1.1</joda-time-jsptags.version>
     <jotm.version>2.1.10</jotm.version>
-    <jsp-2.1-glassfish.version>2.1.v20100127</jsp-2.1-glassfish.version>
     <jsp-api.version>2.1</jsp-api.version>
     <jsr311-api.version>1.1.1</jsr311-api.version>
 
@@ -125,7 +137,7 @@
     <jstl.version>1.2</jstl.version>
 
     <jta.version>1.1</jta.version>
-    <junit.version>4.10</junit.version>
+    <junit.version>4.11</junit.version>
     <log4j.version>1.2.16</log4j.version>
     <mockito.version>1.9.0</mockito.version>
     <persistence.version>1.0.1.Final</persistence.version>
@@ -133,10 +145,12 @@
       Quartz 2.0.x is an impacting api and database-level change -->
     <quartz.version>1.8.4</quartz.version>
     <selenium-java.version>2.16.1</selenium-java.version>
+    <xalan.version>2.7.1</xalan.version>
     <serializer.version>2.7.1</serializer.version>
     <servlet-api.version>2.5</servlet-api.version>
     <slf4j.version>1.6.4</slf4j.version>
-    <soa.model.core.version>1.1.0</soa.model.core.version>
+    <soa.model.core.version>1.2.2</soa.model.core.version>
+    <httpclient.version>4.1.2</httpclient.version>
     <spring-modules-ojb.version>0.8a</spring-modules-ojb.version>
     <spring.version>3.1.0.RELEASE</spring.version>
     <spring.security.version>3.1.0.RELEASE</spring.security.version>
@@ -144,9 +158,9 @@
     <subethasmtp.version>3.1.6</subethasmtp.version>
     <tiles.version>2.2.2</tiles.version>
 
-    <!-- Version 2.3.6 of cxf requires wss4j 1.5.11 and does not work with 1.6.0 -->
-    <wss4j.version>1.5.11</wss4j.version>
-    <xapool.version>1.5.0-patch3</xapool.version>
+    <!-- Version 2.3.6 of cxf requires wss4j 1.5.11 or 1.5.12 and does not work with 1.6.0 -->
+    <wss4j.version>1.6.7</wss4j.version>
+    <xapool.version>1.5.0-patch4</xapool.version>
     <!-- 2.11.0 is not in maven central repo https://issues.apache.org/jira/browse/XERCESJ-1454 -->
     <xercesImpl.version>2.9.1</xercesImpl.version>
     <xmlunit.version>1.3</xmlunit.version>
@@ -158,10 +172,6 @@
     <ojdbc14.jar.location>${jdbc.drivers.location}/com/oracle/${oracle.jdbc.artifactId}/${oracle.jdbc.version}/${oracle.jdbc.artifactId}-${oracle.jdbc.version}.jar</ojdbc14.jar.location>
 
     <cobertura.maven.plugin.version>2.5.1</cobertura.maven.plugin.version>
-    <surefire.plugin.version>2.9</surefire.plugin.version>
-    <failsafe.plugin.version>2.9</failsafe.plugin.version>
-    <source.plugin.version>2.1.2</source.plugin.version>
-    <assembly.plugin.version>2.2.1</assembly.plugin.version>
     <web.launch.context.path>/kr-dev</web.launch.context.path>
 
     <!-- Connect documentation generation to site generation -->
@@ -190,6 +200,41 @@
   </properties>
 
   <profiles>
+    <!-- Setup the dependency tree needed by the deploy logic -->
+    <profile>
+      <id>kdo</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.kuali.maven.plugins</groupId>
+            <artifactId>spring-maven-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>org.kuali.rice</groupId>
+                <artifactId>rice-impex-master</artifactId>
+                <classifier>sql</classifier>
+                <version>${project.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.kuali.common</groupId>
+                <artifactId>kuali-jdbc</artifactId>
+                <version>${kuali-jdbc.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.kuali.common</groupId>
+                <artifactId>kuali-util</artifactId>
+                <version>${kuali-util.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.kuali.common</groupId>
+                <artifactId>kuali-deploy</artifactId>
+                <version>${kuali-deploy.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <!-- Optimize the nightly build -->
     <profile>
       <id>nightly</id>
@@ -247,8 +292,33 @@
                 <exclude>it/**</exclude>
                 <exclude>**/src/it/**</exclude>
 
+                <!-- js plugin folders -->
+                <exclude>**/datatables/**</exclude>
+                <exclude>**/easyXDM/**</exclude>
+                <exclude>**/jscalendar-1.0/**</exclude>
+                <exclude>**/plugins/cookie/**</exclude>
+                <exclude>**/plugins/dirtyform/**</exclude>
+                <exclude>**/plugins/easing/**</exclude>
+                <exclude>**/plugins/easydrag/**</exclude>
+                <exclude>**/plugins/fancybox/**</exclude>
+                <exclude>**/plugins/infusion/**</exclude>
+                <exclude>**/plugins/jgrowl/**</exclude>
+                <exclude>**/plugins/jqform/**</exclude>
+                <exclude>**/plugins/jquery/**</exclude>
+                <exclude>**/plugins/jqueryUI/**</exclude>
+                <exclude>**/plugins/json/**</exclude>
+                <exclude>**/plugins/jstree/**</exclude>
+                <exclude>**/plugins/scrollto/**</exclude>
+                <exclude>**/plugins/validate/**</exclude>
+                <exclude>**/plugins/watermark/**</exclude>
+
                 <!-- File excludes -->
                 <exclude>LICENSE.txt</exclude>
+                <exclude>**/jquery.*</exclude>
+                <exclude>**/smartspinner.*</exclude>
+                <exclude>**/kew/scripts/cal2.js</exclude>
+                <exclude>**/kew/scripts/cal_conf2.js</exclude>
+                <exclude>**/kew/scripts/prototype.js</exclude>
 
                 <!-- File type excludes -->
                 <exclude>**/*.pdf</exclude>
@@ -308,16 +378,6 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>buildnumber-maven-plugin</artifactId>
-          <version>1.0</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-changes-plugin</artifactId>
-          <version>2.6</version>
-        </plugin>
-        <plugin>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <dependencies>
             <dependency>
@@ -335,7 +395,7 @@
         <plugin>
           <groupId>com.agilejava.docbkx</groupId>
           <artifactId>docbkx-maven-plugin</artifactId>
-          <version>2.0.13</version>
+          <version>2.0.14</version>
           <configuration>
             <sourceDirectory>${rice.docbook.filtered}/books</sourceDirectory>
             <xincludeSupported>true</xincludeSupported>
@@ -377,7 +437,6 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>1.0.1</version>
           <executions>
             <execution>
               <id>enforce-banned-dependencies</id>
@@ -573,15 +632,15 @@
         <plugin>
           <groupId>org.codehaus.gmaven</groupId>
           <artifactId>gmaven-plugin</artifactId>
-          <version>1.3</version>
+          <version>1.4</version>
           <configuration>
-            <providerSelection>1.7</providerSelection>
+            <providerSelection>1.8</providerSelection>
           </configuration>
           <dependencies>
             <dependency>
               <groupId>org.codehaus.gmaven.runtime</groupId>
-              <artifactId>gmaven-runtime-1.7</artifactId>
-              <version>1.3</version>
+              <artifactId>gmaven-runtime-1.8</artifactId>
+              <version>1.4</version>
               <exclusions>
                 <exclusion>
                   <groupId>org.codehaus.groovy</groupId>
@@ -634,11 +693,6 @@
           <groupId>com.samaxes.maven</groupId>
           <artifactId>maven-minify-plugin</artifactId>
           <version>1.3.5</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-antrun-plugin</artifactId>
-          <version>1.6</version>
         </plugin>
         <plugin>
           <groupId>com.sun.tools.jxc.maven2</groupId>
@@ -703,7 +757,6 @@
             </dependency>
           </dependencies>
         </plugin>
-
         <plugin>
           <groupId>org.apache.cxf</groupId>
           <artifactId>cxf-java2ws-plugin</artifactId>
@@ -719,6 +772,11 @@
               <artifactId>cxf-rt-frontend-simple</artifactId>
               <version>${cxf.version}</version>
             </dependency>
+            <dependency>
+              <groupId>com.sun.xml.bind</groupId>
+              <artifactId>jaxb-impl</artifactId>
+              <version>${cxf-java2ws-plugin.jaxb-impl.version}</version>
+            </dependency>
           </dependencies>
           <configuration>
             <genWsdl>true</genWsdl>
@@ -729,13 +787,11 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>versions-maven-plugin</artifactId>
-          <version>1.2</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>${surefire.plugin.version}</version>
           <configuration>
             <skip>${maven.surefire.skip}</skip>
             <useFile>false</useFile>
@@ -750,7 +806,6 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>${failsafe.plugin.version}</version>
           <executions>
             <execution>
               <id>integration-test</id>
@@ -812,11 +867,6 @@
           </configuration>
         </plugin>
 
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <version>${assembly.plugin.version}</version>
-        </plugin>
         <plugin>
           <groupId>org.kuali.maven.plugins</groupId>
           <artifactId>maven-http-plugin</artifactId>
@@ -924,6 +974,7 @@
               <htmlStylesheet>../css/stylesheet.css</htmlStylesheet>
               <targetDirectory>${rice.docbook.dest}/html</targetDirectory>
               <tableBordersWithCss>true</tableBordersWithCss>
+              <calloutGraphicsPath>../images/callouts/</calloutGraphicsPath>
             </configuration>
           </execution>
           <execution>
@@ -947,6 +998,7 @@
               <chunkedOutput>true</chunkedOutput>
               <htmlStylesheet>../../css/stylesheet.css</htmlStylesheet>
               <targetDirectory>${rice.docbook.dest}/html-multi</targetDirectory>
+              <calloutGraphicsPath>../../images/callouts/</calloutGraphicsPath>
               <imgSrcPath>../</imgSrcPath>
               <tableBordersWithCss>true</tableBordersWithCss>
             </configuration>
@@ -1035,17 +1087,6 @@
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
-    </repository>
-    <repository>
-      <id>rsmart-dev</id>
-      <name>rsmart-dev</name>
-      <url>https://nexus.rsmart.com/nexus/content/groups/public/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
     </repository>
   </repositories>
 
@@ -1337,6 +1378,11 @@
         <artifactId>filemonitor</artifactId>
         <version>${filemonitor.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>${jaxb-impl.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.apache.cxf</groupId>
@@ -1347,13 +1393,11 @@
             <artifactId>commons-logging</artifactId>
             <groupId>commons-logging</groupId>
           </exclusion>
+          <exclusion>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-javamail_1.4_spec</artifactId>
+          </exclusion>
         </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-common-utilities</artifactId>
-        <version>${cxf.version}</version>
       </dependency>
 
       <dependency>
@@ -1432,14 +1476,6 @@
         <artifactId>cxf-rt-transports-http</artifactId>
         <version>${cxf.version}</version>
       </dependency>
-
-      <dependency>
-        <groupId>org.apache.cxf</groupId>
-        <artifactId>cxf-rt-transports-http-jetty</artifactId>
-        <version>${cxf.version}</version>
-        <scope>test</scope>
-      </dependency>
-
 
       <dependency>
         <groupId>org.apache.cxf</groupId>
@@ -1723,6 +1759,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.kuali.common</groupId>
+        <artifactId>kuali-mvn</artifactId>
+        <version>${kuali-mvn.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.kuali.commons</groupId>
         <artifactId>commons-beanutils</artifactId>
         <version>${commons-beanutils.version}</version>
@@ -1973,6 +2015,12 @@
 
       <dependency>
         <groupId>xalan</groupId>
+        <artifactId>xalan</artifactId>
+        <version>${xalan.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>xalan</groupId>
         <artifactId>serializer</artifactId>
         <version>${serializer.version}</version>
         <exclusions>
@@ -2014,6 +2062,14 @@
         <groupId>com.predic8</groupId>
         <artifactId>soa-model-core</artifactId>
         <version>${soa.model.core.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${httpclient.version}</version>
+        <scope>test</scope>
       </dependency>
 
       <!-- Added dependency to improve spring bean loading e.g KualiDefaultListableBeanFactory in rice-core-framework -->
@@ -2027,30 +2083,14 @@
   </dependencyManagement>
 
   <issueManagement>
-    <system>github</system>
-    <url>https://github.com/rSmart/kuali_rice/issues</url>
+    <system>JIRA</system>
+    <url>http://jira.kuali.org/</url>
   </issueManagement>
 
   <scm>
-    <connection>scm:git:git://github.com/rSmart/kuali_rice.git</connection>
-    <developerConnection>scm:git:git@github.com:rSmart/kuali_rice.git</developerConnection>
-    <url>https://github.com/rSmart/kuali_rice</url>
+    <connection>scm:svn:https://svn.kuali.org/repos/rice/tags/rice-2.1.7</connection>
+    <developerConnection>scm:svn:https://svn.kuali.org/repos/rice/tags/rice-2.1.7</developerConnection>
+    <url>https://svn.kuali.org/repos/rice/tags/rice-2.1.7</url>
   </scm>
 
-  <distributionManagement>
-    <downloadUrl>https://github.com/rSmart/kuali_rice</downloadUrl>
-    <snapshotRepository>
-       <id>rsmart.snapshot.repo</id>
-       <name>rsmart snapshot repository</name>
-       <url>s3://rsmart-dev/artifacts/maven/snapshot</url>
-       <layout>default</layout>
-    </snapshotRepository>
-    <repository>
-      <id>rsmart.release.repo</id>
-      <name>rsmart release repository</name>
-      <url>s3://rsmart-dev/artifacts/maven/release</url>
-    </repository>
-  </distributionManagement>
-
 </project>
-

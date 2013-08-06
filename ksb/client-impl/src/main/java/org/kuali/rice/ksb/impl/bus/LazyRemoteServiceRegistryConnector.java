@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,10 @@ public class LazyRemoteServiceRegistryConnector implements ServiceRegistry {
 	@Override
 	public void takeInstanceOffline(String instanceId)
 			throws RiceIllegalArgumentException {
-		getDelegate().takeInstanceOffline(instanceId);
+        // if Service Registry has not been initialized by this point, do not shutdown
+        if (this.delegate != null) {
+		    getDelegate().takeInstanceOffline(instanceId);
+        }
 	}
 	
 	private ServiceRegistry getDelegate() {

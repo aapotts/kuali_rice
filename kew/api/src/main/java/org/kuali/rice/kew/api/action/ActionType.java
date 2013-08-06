@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.kuali.rice.core.api.mo.common.Coded;
+import org.kuali.rice.kew.api.KewApiConstants;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TODO...
@@ -131,7 +135,18 @@ public enum ActionType implements Coded {
      */
     @XmlEnumValue("M") MOVE("M", "MOVED");
 
-	private final String code;
+    /**
+     * Map of ActionTypes to their SuperUser equivalent
+     */
+    private static final Map<ActionType, ActionType> SU_ACTION_TYPE = new HashMap<ActionType, ActionType>();
+    static {
+        SU_ACTION_TYPE.put(APPROVE, SU_APPROVE);
+        SU_ACTION_TYPE.put(COMPLETE, SU_COMPLETE);
+        SU_ACTION_TYPE.put(FYI, SU_FYI);
+        SU_ACTION_TYPE.put(ACKNOWLEDGE, SU_ACKNOWLEDGE);
+    }
+
+    private final String code;
 	private final String label;
 	
 	private ActionType(String code, String label) {
@@ -166,5 +181,35 @@ public enum ActionType implements Coded {
 		}
 		throw new IllegalArgumentException("Failed to locate the ActionType with the given code: " + code);
 	}
-	
+
+    public static ActionType fromLabel(String label) {
+        if (label == null) {
+            return null;
+        }
+        for (ActionType status : values()) {
+            if (status.label.equals(label)) {
+                return status;
+            }
+        }
+        return null;
+    }
+
+    public static ActionType fromCodeOrLabel(String str) {
+        ActionType at = ActionType.fromCode(str, true);
+        if (at == null && str != null) {
+            at = ActionType.fromLabel(str.toUpperCase());
+        }
+        return at;
+    }
+
+    /**
+     * Converts a non-super-user ActionType to its SuperUser equivalent
+     * @since 2.1.3
+     * @param at the ActionType
+     * @return super-user version of ActionType or null if no equivalent SU action type
+     */
+    public static ActionType toSuperUserActionType(ActionType at) {
+        if (SU_ACTION_TYPE.containsKey(at)) return at;
+        return SU_ACTION_TYPE.get(at);
+    }
 }

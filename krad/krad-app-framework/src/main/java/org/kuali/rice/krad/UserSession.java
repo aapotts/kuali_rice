@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -340,5 +340,12 @@ public class UserSession implements Serializable {
      */
     public Map<String, Object> getObjectMap() {
         return Collections.unmodifiableMap(this.objectMap);
+    }
+
+    /**
+     * clear the objectMap
+     */
+    public void clearObjectMap() {
+        this.objectMap = Collections.synchronizedMap(new HashMap<String,Object>());
     }
 }

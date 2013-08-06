@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class CancelAction extends ActionTakenEvent {
             return "No request for the user is compatible with the Cancel Action";
         }
     	// check state before checking kim
-        if (! KEWServiceLocator.getDocumentTypePermissionService().canCancel(getPrincipal().getPrincipalId(), getDocumentId(), getRouteHeader().getDocumentType(), getRouteHeader().getCurrentNodeNames(), getRouteHeader().getDocRouteStatus(), getRouteHeader().getInitiatorWorkflowId())) {
+        if (! KEWServiceLocator.getDocumentTypePermissionService().canCancel(getPrincipal().getPrincipalId(), getRouteHeader())) {
             return "User is not authorized to Cancel document";
         }
         return "";

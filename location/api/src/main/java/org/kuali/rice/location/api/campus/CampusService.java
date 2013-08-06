@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,7 @@ public interface CampusService {
      * This will return a {@link Campus}.
      *
      * @param code the code of the campus to return
-     * @throws RiceIllegalArgumentException if the code is null
-     * @throws IllegalStateException if the campus does not exist in the system under the
-     * specific code
+     * @throws RiceIllegalArgumentException if the code is null or blank
      */
     @WebMethod(operationName="getCampus")
     @WebResult(name = "campus")

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -210,8 +210,8 @@ public class WorkflowDocumentState implements EDLModelComponent {
 	    // reset editable flag to true if edoclite specifies <param name="alwaysEditable">true</param>
 	    Document edlDom = EdlServiceLocator.getEDocLiteService().getDefinitionXml(edlContext.getEdocLiteAssociation());
 	    // use xpath to check for attribute value on Config param element.
-	    XPath xpath = XPathFactory.newInstance().newXPath();
-	    String xpathExpression = "//config/param[@name='alwaysEditable']"; 
+        XPath xpath = edlContext.getXpath();
+        String xpathExpression = "//config/param[@name='alwaysEditable']";
 	    try {
 		String match = (String) xpath.evaluate(xpathExpression, edlDom, XPathConstants.STRING);
 		if (!StringUtils.isBlank(match) && match.equals("true")) {

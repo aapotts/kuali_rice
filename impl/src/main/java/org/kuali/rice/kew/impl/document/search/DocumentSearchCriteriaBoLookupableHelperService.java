@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,9 @@ import org.kuali.rice.kew.exception.WorkflowServiceErrorException;
 import org.kuali.rice.kew.framework.document.search.DocumentSearchCriteriaConfiguration;
 import org.kuali.rice.kew.framework.document.search.DocumentSearchResultSetConfiguration;
 import org.kuali.rice.kew.framework.document.search.StandardResultField;
+import org.kuali.rice.kew.impl.document.search.DocumentSearchCriteriaBo;
+import org.kuali.rice.kew.impl.document.search.DocumentSearchCriteriaTranslator;
+import org.kuali.rice.kew.impl.document.search.FormFields;
 import org.kuali.rice.kew.lookup.valuefinder.SavedSearchValuesFinder;
 import org.kuali.rice.kew.service.KEWServiceLocator;
 import org.kuali.rice.kew.user.UserUtils;
@@ -220,12 +223,20 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
             cleanedUpFieldValues.put(KEWPropertyConstants.DOC_SEARCH_RESULT_PROPERTY_NAME_STATUS_CODE,
                     StringUtils.join(parameters.get(KEWPropertyConstants.DOC_SEARCH_RESULT_PROPERTY_NAME_STATUS_CODE), ","));
         }
+        if (ArrayUtils.isNotEmpty(parameters.get(KEWPropertyConstants.DOC_SEARCH_RESULT_PROPERTY_NAME_DOC_STATUS))) {
+            cleanedUpFieldValues.put(KEWPropertyConstants.DOC_SEARCH_RESULT_PROPERTY_NAME_DOC_STATUS,
+                    StringUtils.join(parameters.get(KEWPropertyConstants.DOC_SEARCH_RESULT_PROPERTY_NAME_DOC_STATUS), ","));
+        }
         Map<String, String> documentAttributeFieldValues = new HashMap<String, String>();
         for (String parameterName : parameters.keySet()) {
             if (parameterName.contains(KewApiConstants.DOCUMENT_ATTRIBUTE_FIELD_PREFIX)) {
                 String[] value = parameters.get(parameterName);
                 if (ArrayUtils.isNotEmpty(value)) {
-                    documentAttributeFieldValues.put(parameterName, StringUtils.join(value, " " + SearchOperator.OR.op() + " "));
+                    if ( parameters.containsKey(parameterName + KRADConstants.CHECKBOX_PRESENT_ON_FORM_ANNOTATION)) {
+                        documentAttributeFieldValues.put(parameterName, "Y");
+                    }   else {
+                        documentAttributeFieldValues.put(parameterName, StringUtils.join(value, " " + SearchOperator.OR.op() + " "));
+                    }
                 }
             }
         }
@@ -360,9 +371,9 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
         String docTypeName = criteria.getDocumentTypeName();
 
         // update the parameters to include whether or not this is an advanced search
-        if(this.getParameters().containsKey(DocumentSearchCriteriaProcessorKEWAdapter.ADVANCED_SEARCH_FIELD)) {
+        if(this.getParameters().containsKey(KRADConstants.ADVANCED_SEARCH_FIELD)) {
             Map<String, String[]> parameters = this.getParameters();
-            String[] params = (String[])parameters.get(DocumentSearchCriteriaProcessorKEWAdapter.ADVANCED_SEARCH_FIELD);
+            String[] params = (String[])parameters.get(KRADConstants.ADVANCED_SEARCH_FIELD);
             if (ArrayUtils.isNotEmpty(params)) {
                 params[0] = criteria.getIsAdvancedSearch();
                 this.setParameters(parameters);
@@ -465,6 +476,8 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
                     isSuperUserSearch());
         } else if (KEWPropertyConstants.DOC_SEARCH_RESULT_PROPERTY_NAME_ROUTE_LOG.equals(propertyName)) {
             return generateRouteLogUrl(criteriaBo.getDocumentId());
+        } else if(KEWPropertyConstants.DOC_SEARCH_RESULT_PROPERTY_NAME_INITIATOR_DISPLAY_NAME.equals(propertyName)) {
+            return generateInitiatorUrl(criteriaBo.getInitiatorPerson());
         }
         return super.getInquiryUrl(bo, propertyName);
     }
@@ -519,6 +532,24 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
         return link;
     }
 
+    protected HtmlData.AnchorHtmlData generateInitiatorUrl(Person person) {
+        HtmlData.AnchorHtmlData link = new HtmlData.AnchorHtmlData();
+        if ( person == null || StringUtils.isBlank(person.getPrincipalId()) ) {
+            return link;
+        }
+        if (isRouteLogPopup()) {
+            link.setTarget("_blank");
+        }
+        else {
+            link.setTarget("_self");
+        }
+        link.setDisplayText("Initiator Inquiry for User with ID:" + person.getPrincipalId());
+        String url = ConfigContext.getCurrentContextConfig().getProperty(Config.KIM_URL) + "/" +
+            "identityManagementPersonInquiry.do?principalId=" + person.getPrincipalId();
+        link.setHref(url);
+        return link;
+    }
+
     /**
      * Returns true if the document handler should open in a new window.
      */
@@ -565,7 +596,7 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
      * Returns true if the current search being executed is an "advanced" search.
      */
     protected boolean isAdvancedSearch() {
-        return isFlagSet(DocumentSearchCriteriaProcessorKEWAdapter.ADVANCED_SEARCH_FIELD);
+        return isFlagSet(KRADConstants.ADVANCED_SEARCH_FIELD);
     }
 
     /**
@@ -732,7 +763,9 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
 
     @Override
     public void performClear(LookupForm lookupForm) {
-        DocumentSearchCriteria criteria = loadCriteria(lookupForm.getFields());
+        //KULRICE-7709 Convert dateCreated value to range before loadCriteria
+        Map<String, String> formFields = LookupUtils.preProcessRangeFields(lookupForm.getFields());
+        DocumentSearchCriteria criteria = loadCriteria(formFields);
         super.performClear(lookupForm);
         repopulateSearchTypeFlags();
         DocumentType documentType = getValidDocumentType(criteria.getDocumentTypeName());
@@ -750,7 +783,7 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
         boolean superUserSearch = isSuperUserSearch();
         int fieldsRepopulated = 0;
         Map<String, String[]> values = new HashMap<String, String[]>();
-        values.put(DocumentSearchCriteriaProcessorKEWAdapter.ADVANCED_SEARCH_FIELD, new String[] { advancedSearch ? "YES" : "NO" });
+        values.put(KRADConstants.ADVANCED_SEARCH_FIELD, new String[] { advancedSearch ? "YES" : "NO" });
         values.put(DocumentSearchCriteriaProcessorKEWAdapter.SUPERUSER_SEARCH_FIELD, new String[] { superUserSearch ? "YES" : "NO" });
         getFormFields().setFieldValues(values);
     }
@@ -853,6 +886,15 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
         }
         populateCustomColumns(customColumns, searchResult);
 
+        // if there is an action custom column, always put that before any other field
+        for (Column column : customColumns){
+            if (column.getColumnTitle().equals(KRADConstants.ACTIONS_COLUMN_TITLE)){
+                newColumns.add(0, column);
+                customColumns.remove(column);
+                break;
+            }
+        }
+
         // now merge the custom columns into the standard columns right before the route log (if the route log column wasn't removed!)
         if (newColumns.isEmpty() || !StandardResultField.ROUTE_LOG.isFieldNameValid(newColumns.get(newColumns.size() - 1).getPropertyName())) {
             newColumns.addAll(customColumns);
@@ -878,6 +920,16 @@ public class DocumentSearchCriteriaBoLookupableHelperService extends KualiLookup
                     attributeValue = new KualiPercent((BigDecimal)attributeValue);
                 }
                 customColumn.setPropertyValue(formatter.format(attributeValue).toString());
+
+                //populate the custom column columnAnchor because it is used for determining if the result field is displayed
+                //as static string or links
+                HtmlData anchor = customColumn.getColumnAnchor();
+                if (anchor != null && anchor instanceof HtmlData.AnchorHtmlData){
+                    HtmlData.AnchorHtmlData anchorHtml = (HtmlData.AnchorHtmlData)anchor;
+                    if (StringUtils.isEmpty(anchorHtml.getHref()) && StringUtils.isEmpty(anchorHtml.getTitle())){
+                        customColumn.setColumnAnchor(new HtmlData.AnchorHtmlData(formatter.format(attributeValue).toString(), documentAttribute.getName()));
+                    }
+                }
             }
         }
     }

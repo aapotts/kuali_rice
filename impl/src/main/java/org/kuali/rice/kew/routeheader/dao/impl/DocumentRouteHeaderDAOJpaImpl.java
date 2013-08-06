@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,12 +195,12 @@ public class DocumentRouteHeaderDAOJpaImpl implements DocumentRouteHeaderDAO {
             return new ArrayList();
         }
 
-        String respIds = "(";
+        String respIds = "('";
         int index = 0;
         for (String responsibilityId : responsibilityIds) {
-            respIds += responsibilityId + (index == responsibilityIds.size()-1 ? "" : ",");
+            respIds += responsibilityId + (index == responsibilityIds.size()-1 ? "" : "','");
         }
-        respIds += ")";
+        respIds += "')";
 
         String query = "SELECT DISTINCT(doc_hdr_id) FROM KREW_ACTN_RQST_T "+
         	"WHERE (STAT_CD='" +
@@ -276,7 +276,13 @@ public class DocumentRouteHeaderDAOJpaImpl implements DocumentRouteHeaderDAO {
         query.setParameter("documentId", documentId);
         return (String) query.getSingleResult(); 
  	 }
-    
+
+    public String getAppDocStatus(String documentId) {
+        Query query = entityManager.createNamedQuery("DocumentRouteHeaderValue.GetAppDocStatus");
+        query.setParameter("documentId", documentId);
+        return (String) query.getSingleResult();
+    }
+
     public void save(SearchableAttributeValue searchableAttributeValue) {   	
     	if (searchableAttributeValue.getSearchableAttributeValueId() == null){
     		entityManager.persist(searchableAttributeValue);

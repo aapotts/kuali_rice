@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class IdentityManagementPersonDocumentRule extends TransactionalDocumentR
 	protected Class<? extends AddGroupRule> addGroupRuleClass = PersonDocumentGroupRule.class;
 	protected Class<? extends AddRoleRule> addRoleRuleClass = PersonDocumentRoleRule.class;
 	protected Class<? extends AddPersonDelegationMemberRule> addPersonDelegationMemberRuleClass = PersonDocumentDelegationMemberRule.class;
-
+    protected ActiveRoleMemberHelper activeRoleMemberHelper = new ActiveRoleMemberHelper();
 	protected AttributeValidationHelper attributeValidationHelper = new AttributeValidationHelper();
 
     @Override
@@ -423,7 +423,8 @@ public class IdentityManagementPersonDocumentRule extends TransactionalDocumentR
 
 	        if ( kimTypeService != null ) {
 		        int j = 0;
-	        	for ( KimDocumentRoleMember rolePrincipal : role.getRolePrncpls() ) {
+
+	        	for ( KimDocumentRoleMember rolePrincipal : activeRoleMemberHelper.getActiveRoleMembers(role.getRolePrncpls()) ) {
 	        		List<RemotableAttributeError> localErrors = kimTypeService.validateAttributes( role.getKimRoleType().getId(), attributeValidationHelper.convertQualifiersToMap( rolePrincipal.getQualifiers() ) );
 			        validationErrors.addAll( attributeValidationHelper.convertErrors(
                             "roles[" + i + "].rolePrncpls[" + j + "]",
@@ -460,22 +461,23 @@ public class IdentityManagementPersonDocumentRule extends TransactionalDocumentR
     	int count = 0;
 
     	for (KimDocumentRoleMember membership : role.getRolePrncpls()) {
-    		if (membershipToCheckIndex != count) {
-    			if (sameMembershipQualifications(membershipToCheck, membership, uniqueQualifierAttributes)) {
-    				foundError = true;
+            if (sameMembershipQualifications(membershipToCheck, membership, uniqueQualifierAttributes)) {
+                if (count == 0 ) {
+                    count +=1;
+                } else {
+                    count += 1;
+                    foundError = true;
 
-    				int qualifierCount = 0;
+        		    int qualifierCount = 0;
 
-					for (KimDocumentRoleQualifier qualifier : membership.getQualifiers()) {
-						if (qualifier != null && uniqueQualifierAttributes.contains(qualifier.getKimAttrDefnId())) {
-							validationErrors.add(RemotableAttributeError.Builder.create("document.roles["+roleIndex+"].rolePrncpls["+membershipToCheckIndex+"].qualifiers["+qualifierCount+"].attrVal", RiceKeyConstants.ERROR_DOCUMENT_IDENTITY_MANAGEMENT_PERSON_QUALIFIER_VALUE_NOT_UNIQUE+":"+qualifier.getKimAttribute().getAttributeName()+";"+qualifier.getAttrVal()).build());
-						}
-						qualifierCount += 1;
-					}
-    			}
+		    	    for (KimDocumentRoleQualifier qualifier : membership.getQualifiers()) {
+			    	    if (qualifier != null && uniqueQualifierAttributes.contains(qualifier.getKimAttrDefnId())) {
+						    validationErrors.add(RemotableAttributeError.Builder.create("document.roles["+roleIndex+"].rolePrncpls["+membershipToCheckIndex+"].qualifiers["+qualifierCount+"].attrVal", RiceKeyConstants.ERROR_DOCUMENT_IDENTITY_MANAGEMENT_PERSON_QUALIFIER_VALUE_NOT_UNIQUE+":"+qualifier.getKimAttribute().getAttributeName()+";"+qualifier.getAttrVal()).build());
+				   	    }
+				        qualifierCount += 1;
+				    }
+                }
     		}
-
-    		count += 1;
     	}
     	return foundError;
     }

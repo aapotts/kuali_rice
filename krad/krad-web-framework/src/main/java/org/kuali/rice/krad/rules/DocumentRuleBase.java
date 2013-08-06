@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,10 @@ import org.kuali.rice.core.api.config.property.ConfigurationService;
 import org.kuali.rice.core.api.util.RiceKeyConstants;
 import org.kuali.rice.coreservice.framework.parameter.ParameterConstants;
 import org.kuali.rice.coreservice.framework.CoreFrameworkServiceLocator;
+import org.kuali.rice.kew.api.KewApiConstants;
+import org.kuali.rice.kew.api.KewApiServiceLocator;
+import org.kuali.rice.kew.api.doctype.DocumentType;
+import org.kuali.rice.kew.api.doctype.DocumentTypeService;
 import org.kuali.rice.kim.api.KimConstants;
 import org.kuali.rice.kim.api.group.Group;
 import org.kuali.rice.kim.api.group.GroupService;
@@ -28,6 +32,7 @@ import org.kuali.rice.kim.api.identity.PersonService;
 import org.kuali.rice.kim.api.permission.PermissionService;
 import org.kuali.rice.kim.api.services.KimApiServiceLocator;
 import org.kuali.rice.krad.bo.AdHocRoutePerson;
+import org.kuali.rice.krad.bo.AdHocRouteRecipient;
 import org.kuali.rice.krad.bo.AdHocRouteWorkgroup;
 import org.kuali.rice.krad.bo.DocumentHeader;
 import org.kuali.rice.krad.bo.Note;
@@ -38,6 +43,7 @@ import org.kuali.rice.krad.rules.rule.AddAdHocRoutePersonRule;
 import org.kuali.rice.krad.rules.rule.AddAdHocRouteWorkgroupRule;
 import org.kuali.rice.krad.rules.rule.AddNoteRule;
 import org.kuali.rice.krad.rules.rule.ApproveDocumentRule;
+import org.kuali.rice.krad.rules.rule.CompleteDocumentRule;
 import org.kuali.rice.krad.rules.rule.RouteDocumentRule;
 import org.kuali.rice.krad.rules.rule.SaveDocumentRule;
 import org.kuali.rice.krad.rules.rule.SendAdHocRequestsRule;
@@ -52,7 +58,13 @@ import org.kuali.rice.krad.util.KRADConstants;
 import org.kuali.rice.krad.util.KRADPropertyConstants;
 import org.kuali.rice.krad.util.KRADUtils;
 import org.kuali.rice.krad.util.MessageMap;
+import org.kuali.rice.krad.util.ObjectUtils;
 import org.kuali.rice.krad.util.RouteToCompletionUtil;
+import org.kuali.rice.krad.workflow.service.WorkflowDocumentService;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Contains all of the business rules that are common to all documents
@@ -60,7 +72,7 @@ import org.kuali.rice.krad.util.RouteToCompletionUtil;
  * @author Kuali Rice Team (rice.collab@kuali.org)
  */
 public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumentRule, ApproveDocumentRule, AddNoteRule,
-        AddAdHocRoutePersonRule, AddAdHocRouteWorkgroupRule, SendAdHocRequestsRule {
+        AddAdHocRoutePersonRule, AddAdHocRouteWorkgroupRule, SendAdHocRequestsRule, CompleteDocumentRule {
     private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(DocumentRuleBase.class);
 
     private static PersonService personService;
@@ -69,6 +81,7 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
     private static ConfigurationService kualiConfigurationService;
     private static GroupService groupService;
     private static PermissionService permissionService;
+    private static DocumentTypeService documentTypeService;
     private static DataDictionaryService dataDictionaryService;
 
     // just some arbitrarily high max depth that's unlikely to occur in real life to prevent recursion problems
@@ -174,12 +187,13 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
     public boolean processRouteDocument(Document document) {
         boolean isValid = true;
 
-        isValid = isDocumentAttributesValid(document, true);
+        isValid = isDocumentOverviewValid(document);
 
         boolean completeRequestPending = RouteToCompletionUtil.checkIfAtleastOneAdHocCompleteRequestExist(document);
 
         // Validate the document if the header is valid and no pending completion requests
         if (isValid && !completeRequestPending) {
+            isValid &= isDocumentAttributesValid(document, true);
             isValid &= processCustomRouteDocumentBusinessRules(document);
         }
 
@@ -348,17 +362,30 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
             errorMap.addToErrorPath(KRADConstants.NEW_AD_HOC_ROUTE_PERSON_PROPERTY_NAME);
         }
 
+        String actionRequestedCode = person.getActionRequested();
         if (StringUtils.isNotBlank(person.getId())) {
             Person user = getPersonService().getPersonByPrincipalName(person.getId());
 
             if (user == null) {
                 GlobalVariables.getMessageMap().putError(KRADPropertyConstants.ID,
                         RiceKeyConstants.ERROR_INVALID_ADHOC_PERSON_ID);
-            } else if (!getPermissionService().hasPermission(user.getPrincipalId(),
+            } 
+            else if (!getPermissionService().hasPermission(user.getPrincipalId(),
                     KimConstants.KIM_TYPE_DEFAULT_NAMESPACE, KimConstants.PermissionNames.LOG_IN)) {
                 GlobalVariables.getMessageMap().putError(KRADPropertyConstants.ID,
                         RiceKeyConstants.ERROR_INACTIVE_ADHOC_PERSON_ID);
-            } else {
+            }
+            else if(this.isAdHocRouteCompletionToInitiator(document, user, actionRequestedCode)){
+                // KULRICE-7419: Adhoc route completion validation rule (should not route to initiator for completion)
+                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.ID,
+                        RiceKeyConstants.ERROR_ADHOC_COMPLETE_PERSON_IS_INITIATOR);
+            } 
+            else if(StringUtils.equals(actionRequestedCode, KewApiConstants.ACTION_REQUEST_COMPLETE_REQ) && this.hasAdHocRouteCompletion(document, person)){
+                // KULRICE-8760: Multiple complete adhoc requests should not be allowed on the same document
+                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.ID,
+                        RiceKeyConstants.ERROR_ADHOC_COMPLETE_MORE_THAN_ONE);
+            }
+            else {
                 Class docOrBoClass = null;
                 if (document instanceof MaintenanceDocument) {
                     docOrBoClass = ((MaintenanceDocument) document).getNewMaintainableObject().getDataObjectClass();
@@ -366,8 +393,7 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
                     docOrBoClass = document.getClass();
                 }
 
-                if (!getDocumentDictionaryService().getDocumentAuthorizer(document).canReceiveAdHoc(document, user,
-                        person.getActionRequested())) {
+                if (!getDocumentDictionaryService().getDocumentAuthorizer(document).canReceiveAdHoc(document, user, actionRequestedCode)) {
                     GlobalVariables.getMessageMap().putError(KRADPropertyConstants.ID,
                             RiceKeyConstants.ERROR_UNAUTHORIZED_ADHOC_PERSON_ID);
                 }
@@ -382,7 +408,60 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
 
         return GlobalVariables.getMessageMap().hasNoErrors();
     }
-
+    
+    /**
+     * KULRICE-7419: Adhoc route completion validation rule (should not route to initiator for completion)
+     * 
+     * determine whether the document initiator is the same as the adhoc recipient for completion
+     */
+    protected boolean isAdHocRouteCompletionToInitiator(Document document, Person person, String actionRequestCode){
+        if(!StringUtils.equals(actionRequestCode, KewApiConstants.ACTION_REQUEST_COMPLETE_REQ)){
+            return false;
+        }
+        
+        String documentInitiator = document.getDocumentHeader().getWorkflowDocument().getInitiatorPrincipalId();       
+        String adhocRecipient = person.getPrincipalId();
+        
+        return StringUtils.equals(documentInitiator, adhocRecipient);
+    }
+    
+    /**
+     * KULRICE-8760: check whether there is any other complete adhoc request on the given document 
+     */
+    protected boolean hasAdHocRouteCompletion(Document document, AdHocRouteRecipient adHocRouteRecipient){         
+        List<AdHocRoutePerson> adHocRoutePersons = document.getAdHocRoutePersons();
+        if(ObjectUtils.isNotNull(adHocRoutePersons)){
+            for(AdHocRoutePerson adhocRecipient : adHocRoutePersons){
+                // the given adhoc route recipient doesn't count
+                if(adHocRouteRecipient==adhocRecipient){
+                    continue;
+                }
+                
+                String actionRequestCode = adhocRecipient.getActionRequested();
+                if(StringUtils.equals(KewApiConstants.ACTION_REQUEST_COMPLETE_REQ, actionRequestCode)){
+                    return true;
+                }
+            }
+        }
+        
+        List<AdHocRouteWorkgroup> adHocRouteWorkgroups = document.getAdHocRouteWorkgroups();
+        if(ObjectUtils.isNotNull(adHocRouteWorkgroups)){
+            for(AdHocRouteWorkgroup adhocRecipient : adHocRouteWorkgroups){
+                // the given adhoc route recipient doesn't count
+                if(adHocRouteRecipient==adhocRecipient){
+                    continue;
+                }
+                
+                String actionRequestCode = adhocRecipient.getActionRequested();
+                if(StringUtils.equals(KewApiConstants.ACTION_REQUEST_COMPLETE_REQ, actionRequestCode)){
+                    return true;
+                }
+            }
+        }        
+        
+        return false;
+    }    
+    
     /**
      * This method should be overridden by children rule classes as a hook to implement document specific business rule
      * checks for
@@ -403,7 +482,7 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
     public boolean processAddAdHocRouteWorkgroup(Document document, AdHocRouteWorkgroup adHocRouteWorkgroup) {
         boolean isValid = true;
 
-        isValid &= isAddHocRouteWorkgroupValid(adHocRouteWorkgroup);
+        isValid &= isAddHocRouteWorkgroupValid(document, adHocRouteWorkgroup);
 
         isValid &= processCustomAddAdHocRouteWorkgroupBusinessRules(document, adHocRouteWorkgroup);
         return isValid;
@@ -415,7 +494,7 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
      * @param workgroup
      * @return boolean True if valid, false otherwise.
      */
-    public boolean isAddHocRouteWorkgroupValid(AdHocRouteWorkgroup workgroup) {
+    public boolean isAddHocRouteWorkgroupValid(Document document, AdHocRouteWorkgroup workgroup) {
         MessageMap errorMap = GlobalVariables.getMessageMap();
 
         // new recipients are not embedded in the error path; existing lines should be
@@ -429,19 +508,63 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
             try {
                 Group group = getGroupService().getGroupByNamespaceCodeAndName(workgroup.getRecipientNamespaceCode(),
                         workgroup.getRecipientName());
+                
+                String actionRequestedCode = workgroup.getActionRequested();
                 if (group == null || !group.isActive()) {
-                    GlobalVariables.getMessageMap().putError(KRADPropertyConstants.ID,
+                    //  KULRICE-8091: Adhoc routing tab utilizing Groups on all documents missing asterisks 
+                    GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAME,
                             RiceKeyConstants.ERROR_INVALID_ADHOC_WORKGROUP_ID);
+                    GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAMESPACE_CODE, RiceKeyConstants.ERROR_ADHOC_INVALID_WORKGROUP_NAMESPACE);
+                } 
+                else if(StringUtils.equals(actionRequestedCode, KewApiConstants.ACTION_REQUEST_COMPLETE_REQ) && this.hasAdHocRouteCompletion(document, workgroup)){
+                    // KULRICE-8760: Multiple complete adhoc requests should not be allowed on the same document
+                    GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAMESPACE_CODE,
+                            RiceKeyConstants.ERROR_ADHOC_COMPLETE_MORE_THAN_ONE);
+                }
+                else {
+                    org.kuali.rice.kew.api.document.WorkflowDocumentService
+                            wds = KewApiServiceLocator.getWorkflowDocumentService();
+                    DocumentType documentType = KewApiServiceLocator.getDocumentTypeService().getDocumentTypeByName(
+                            wds.getDocument(document.getDocumentNumber()).getDocumentTypeName());
+                    Map<String, String> permissionDetails = buildDocumentTypeActionRequestPermissionDetails(
+                            documentType, workgroup.getActionRequested());
+                    if (useKimPermission(KewApiConstants.KEW_NAMESPACE, KewApiConstants.AD_HOC_REVIEW_PERMISSION, permissionDetails) ){
+                        List<String> principalIds = getGroupService().getMemberPrincipalIds(group.getId());
+                        // if any member of the group is not allowed to receive the request, then the group may not receive it
+                        for (String principalId : principalIds) {
+                            if (!getPermissionService().isAuthorizedByTemplate(principalId,
+                                    KewApiConstants.KEW_NAMESPACE, KewApiConstants.AD_HOC_REVIEW_PERMISSION,
+                                    permissionDetails, new HashMap<String, String>())) {
+                                
+                                //  KULRICE-8091: Adhoc routing tab utilizing Groups on all documents missing asterisks 
+                                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAME,
+                                        RiceKeyConstants.ERROR_UNAUTHORIZED_ADHOC_WORKGROUP_ID);
+                                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAMESPACE_CODE, RiceKeyConstants.ERROR_ADHOC_INVALID_WORKGROUP_NAMESPACE);
+                                
+                                break;
+                            }
+                        }
+                    }
                 }
             } catch (Exception e) {
                 LOG.error("isAddHocRouteWorkgroupValid(AdHocRouteWorkgroup)", e);
-
-                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.ID,
+                
+                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAME,
                         RiceKeyConstants.ERROR_INVALID_ADHOC_WORKGROUP_ID);
+                
+                //  KULRICE-8091: Adhoc routing tab utilizing Groups on all documents missing asterisks 
+                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAMESPACE_CODE, RiceKeyConstants.ERROR_ADHOC_INVALID_WORKGROUP_NAMESPACE);
             }
         } else {
-            GlobalVariables.getMessageMap().putError(KRADPropertyConstants.ID,
+            //  KULRICE-8091: Adhoc routing tab utilizing Groups on all documents missing asterisks 
+            if(workgroup.getRecipientNamespaceCode()==null) {
+                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAMESPACE_CODE, RiceKeyConstants.ERROR_ADHOC_INVALID_WORKGROUP_NAMESPACE_MISSING);
+            }
+            
+            if(workgroup.getRecipientName()==null) {
+                GlobalVariables.getMessageMap().putError(KRADPropertyConstants.RECIPIENT_NAME,
                     RiceKeyConstants.ERROR_MISSING_ADHOC_WORKGROUP_ID);
+            }
         }
 
         // drop the error path keys off now
@@ -449,7 +572,6 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
 
         return GlobalVariables.getMessageMap().hasNoErrors();
     }
-
     /**
      * This method should be overridden by children rule classes as a hook to implement document specific business rule
      * checks for
@@ -527,6 +649,28 @@ public abstract class DocumentRuleBase implements SaveDocumentRule, RouteDocumen
     protected boolean processCustomCompleteDocumentBusinessRules(Document document) {
         return true;
     }
+
+    protected boolean useKimPermission(String namespace, String permissionTemplateName, Map<String, String> permissionDetails) {
+		Boolean b =  CoreFrameworkServiceLocator.getParameterService().getParameterValueAsBoolean(KewApiConstants.KEW_NAMESPACE, KRADConstants.DetailTypes.ALL_DETAIL_TYPE, KewApiConstants.KIM_PRIORITY_ON_DOC_TYP_PERMS_IND);
+		if (b == null || b) {
+			return getPermissionService().isPermissionDefinedByTemplate(namespace, permissionTemplateName,
+                    permissionDetails);
+		}
+		return false;
+	}
+    protected Map<String, String> buildDocumentTypeActionRequestPermissionDetails(DocumentType documentType, String actionRequestCode) {
+		Map<String, String> details = buildDocumentTypePermissionDetails(documentType);
+		if (!StringUtils.isBlank(actionRequestCode)) {
+			details.put(KewApiConstants.ACTION_REQUEST_CD_DETAIL, actionRequestCode);
+		}
+		return details;
+	}
+
+    protected Map<String, String> buildDocumentTypePermissionDetails(DocumentType documentType) {
+		Map<String, String> details = new HashMap<String, String>();
+		details.put(KewApiConstants.DOCUMENT_TYPE_NAME_DETAIL, documentType.getName());
+		return details;
+	}
 
     protected DataDictionaryService getDataDictionaryService() {
         if (dataDictionaryService == null) {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,6 +129,15 @@ public class WorkflowDocumentServiceImpl implements WorkflowDocumentService {
         }
  	 	return KEWServiceLocator.getRouteHeaderService().getAppDocId(documentId);
  	}
+
+    @Override
+    public String getApplicationDocumentStatus(String documentId)
+            throws RiceIllegalArgumentException {
+        if (StringUtils.isEmpty(documentId)) {
+            throw new RiceIllegalArgumentException("documentId was blank or null");
+        }
+        return KEWServiceLocator.getRouteHeaderService().getAppDocStatus(documentId);
+    }
 
     @Override
     public DocumentSearchResults documentSearch(String principalId, DocumentSearchCriteria criteria) {
@@ -277,6 +286,11 @@ public class WorkflowDocumentServiceImpl implements WorkflowDocumentService {
 	}
 
     @Override
+    public List<ActionTaken> _getActionsTaken(String documentId) {
+        return getActionsTaken(documentId);
+    }
+
+    @Override
     public List<ActionTaken> getAllActionsTaken(String documentId){
         if(StringUtils.isEmpty(documentId)){
             throw new RiceIllegalArgumentException("documentId is null or empty.");
@@ -378,6 +392,33 @@ public class WorkflowDocumentServiceImpl implements WorkflowDocumentService {
     		LOG.debug("Fetching current RouteNodeInstanceVOs [docId=" + documentId + "]");
     	}
     	return convertRouteNodeInstances(KEWServiceLocator.getRouteNodeService().getCurrentNodeInstances(documentId));
+    }
+    
+    public List<String> getActiveRouteNodeNames(String documentId) {
+    	if (StringUtils.isBlank(documentId)) {
+            throw new RiceIllegalArgumentException("documentId was null or blank");
+        }
+    	
+    	final List<String> nodes = KEWServiceLocator.getRouteNodeService().getActiveRouteNodeNames(documentId);
+    	return nodes != null ? Collections.unmodifiableList(nodes) : Collections.<String>emptyList();
+    }
+    
+    public List<String> getTerminalRouteNodeNames(String documentId) {
+    	if (StringUtils.isBlank(documentId)) {
+            throw new RiceIllegalArgumentException("documentId was null or blank");
+        }
+    	
+    	final List<String> nodes = KEWServiceLocator.getRouteNodeService().getTerminalRouteNodeNames(documentId);
+    	return nodes != null ? Collections.unmodifiableList(nodes) : Collections.<String>emptyList();
+    }
+
+    public List<String> getCurrentRouteNodeNames(String documentId) {
+    	if (StringUtils.isBlank(documentId)) {
+            throw new RiceIllegalArgumentException("documentId was null or blank");
+        }
+    	
+    	final List<String> nodes = KEWServiceLocator.getRouteNodeService().getCurrentRouteNodeNames(documentId);
+    	return nodes != null ? Collections.unmodifiableList(nodes) : Collections.<String>emptyList();
     }
 
 	private List<RouteNodeInstance> convertRouteNodeInstances(List<org.kuali.rice.kew.engine.node.RouteNodeInstance> routeNodeInstanceBos) {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class ContextMaintainable extends MaintainableImpl {
     public void processAfterNew(MaintenanceDocument document, Map<String, String[]> requestParameters) {
         ContextBo newContext = (ContextBo) document.getNewMaintainableObject().getDataObject();
 
-        String nextId = getSequenceAccessorService().getNextAvailableSequenceNumber(KrmsMaintenanceConstants.Sequences.CONTEXT).toString();
+        String nextId = getSequenceAccessorService().getNextAvailableSequenceNumber(KrmsMaintenanceConstants.Sequences.CONTEXT, ContextBo.class).toString();
         newContext.setId(nextId);
 
         super.processAfterNew(document, requestParameters);    
@@ -51,7 +51,7 @@ public class ContextMaintainable extends MaintainableImpl {
     public void processAfterCopy(MaintenanceDocument document, Map<String, String[]> requestParameters) {
         ContextBo context = (ContextBo) document.getNewMaintainableObject().getDataObject();
 
-        String nextId = getSequenceAccessorService().getNextAvailableSequenceNumber(KrmsMaintenanceConstants.Sequences.CONTEXT).toString();
+        String nextId = getSequenceAccessorService().getNextAvailableSequenceNumber(KrmsMaintenanceConstants.Sequences.CONTEXT, ContextBo.class).toString();
         context.setId(nextId);
 
         super.processAfterCopy(document,

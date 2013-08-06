@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -333,6 +333,9 @@ public class BusinessObjectDaoOjb extends PlatformAwareDaoBaseOjb implements Bus
             Object value = e.getValue();
             if (value instanceof Collection) {
                 criteria.addIn(key, (Collection) value);
+            } else if(value instanceof String && ((String)value).contains("*")){
+               value = ((String)value).replace("*","%");
+               criteria.addLike(key,value);
             }
             else {
                 criteria.addEqualTo(key, value);

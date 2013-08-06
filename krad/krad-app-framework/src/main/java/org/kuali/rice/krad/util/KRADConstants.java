@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,8 @@ public final class KRADConstants {
     public static final String KRAD_INQUIRY_URL_KEY = "krad.inquiry.url";
     public static final String KRAD_LOOKUP_URL_KEY = "krad.lookup.url";
     public static final String KRAD_SERVER_LOOKUP_URL_KEY = "rice.server.krad.lookup.url";
+    public static final String KRAD_INITIATED_DOCUMENT_URL_KEY="initiated.document.url";
+    public static final String KRAD_INITIATED_DOCUMENT_VIEW_NAME="InitiatedDocumentView";
 
     public static final String PARAM_MAINTENANCE_VIEW_MODE = "maintenanceViewMode";
     public static final String PARAM_MAINTENANCE_VIEW_MODE_MAINTENANCE = "maintenance";
@@ -235,6 +237,7 @@ public final class KRADConstants {
     public static final String DOCUMENT_SAVE_BEFORE_CLOSE_QUESTION = "DocSaveBeforeClose";
     public static final String EXTRA_BUTTON_SOURCE = "extraButtonSource";
     public static final String EXTRA_BUTTON_PARAMS = "extraButtonParams";
+    public static final String ADVANCED_SEARCH_FIELD = "isAdvancedSearch";
     public static final String NEW_AD_HOC_ROUTE_PERSON_PROPERTY_NAME = "newAdHocRoutePerson";
     public static final String NEW_AD_HOC_ROUTE_WORKGROUP_PROPERTY_NAME = "newAdHocRouteWorkgroup";
     public static final String EXISTING_AD_HOC_ROUTE_PERSON_PROPERTY_NAME = "adHocRoutePerson";
@@ -601,8 +604,9 @@ public final class KRADConstants {
     	public static final String ILLEGAL_BUSINESS_OBJECTS_FOR_SAVE = "rice.krad.illegalBusinessObjectsForSave";
         public static final String COMPONENT_PUBLISHING_ENABLED = "rice.krad.componentPublishing.enabled";
         public static final String COMPONENT_PUBLISHING_DELAY = "rice.krad.componentPublishing.delay";
-    	
-    	private Config() {
+        public static final String IGNORE_MISSIONG_FIELDS_ON_DESERIALIZE = "rice.krad.bos.ignoreMissingFieldsOnDeserialize";
+
+        private Config() {
     		throw new UnsupportedOperationException("do not call");
     	}
     }
@@ -620,6 +624,8 @@ public final class KRADConstants {
     public static final String DATA_TYPE_LONG = CoreConstants.DATA_TYPE_LONG;
     public static final String DATA_TYPE_FLOAT = CoreConstants.DATA_TYPE_FLOAT;
     public static final String DATA_TYPE_BOOLEAN = CoreConstants.DATA_TYPE_BOOLEAN;
+
+    public static final String ACTIONS_COLUMN_TITLE = "Actions";
 
     public static final class Maintenance {
         public static final String REQUEST_MAPPING_MAINTENANCE = "maintenance";

@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,22 @@ public abstract class AbstractServiceDefinition implements ServiceDefinition {
 		this.busSecurity = Boolean.TRUE;
 		this.queue = true;
 		this.serviceClassLoader = ClassLoaderUtils.getDefaultClassLoader();
+	}
+
+	private boolean basicAuthentication = false;
+
+	/**
+	 * @return the basicAuthentication
+	 */
+	public boolean isBasicAuthentication() {
+		return this.basicAuthentication;
+	}
+
+	/**
+	 * @param basicAuthentication the basicAuthentication to set
+	 */
+	public void setBasicAuthentication(boolean basicAuthentication) {
+		this.basicAuthentication = basicAuthentication;
 	}
 
 	public Object getService() {

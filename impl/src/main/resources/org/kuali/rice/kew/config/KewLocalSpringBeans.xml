@@ -1,6 +1,6 @@
 <!--
 
-    Copyright 2005-2012 The Kuali Foundation
+    Copyright 2005-2013 The Kuali Foundation
 
     Licensed under the Educational Community License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -89,26 +89,6 @@
     <property name="responsibilityIdService" ref="enResponsibilityIdService"/>
   </bean>
 
-  <!--  RuleTemplateService -->
-  <bean id="enRuleTemplateService" class="org.kuali.rice.kew.rule.service.impl.RuleTemplateServiceImpl"
-        lazy-init="true">
-    <property name="ruleTemplateDAO">
-      <ref bean="enRuleTemplateDAO"/>
-    </property>
-    <property name="ruleTemplateAttributeDAO">
-      <ref bean="enRuleTemplateAttributeDAO"/>
-    </property>
-    <property name="ruleTemplateOptionDAO">
-      <ref bean="enRuleTemplateOptionDAO"/>
-    </property>
-    <property name="ruleDAO">
-      <ref bean="enRuleDAO"/>
-    </property>
-    <property name="ruleDelegationDAO">
-      <ref bean="enRuleDelegationDAO"/>
-    </property>
-  </bean>
-
   <!--  RuleDelegationService -->
   <bean id="enRuleDelegationService" class="org.kuali.rice.kew.rule.service.impl.RuleDelegationServiceImpl"
         lazy-init="true">
@@ -133,10 +113,6 @@
     <property name="statsDAO">
       <ref bean="enStatsDAO"/>
     </property>
-  </bean>
-
-  <bean id="rice.kew.documentTypeService" class="org.kuali.rice.kew.impl.doctype.DocumentTypeServiceImpl">
-    <property name="documentTypeDao" ref="enDocumentTypeDAO"/>
   </bean>
 
   <bean id="rice.kew.preferencesService" class="org.kuali.rice.kew.preferences.service.impl.PreferencesServiceImpl" />
@@ -254,7 +230,6 @@
         <idref local="rice.kew.groupMembershipChangeQueue"/>
         <idref local="enActionListEmailService"/>
         <idref local="enQuickLinksService"/>
-        <idref local="rice.kew.documentTypeService"/>
         <idref local="rice.kew.noteService"/>
         <idref local="rice.kew.preferencesService"/>
         <idref local="rice.kew.ruleService"/>

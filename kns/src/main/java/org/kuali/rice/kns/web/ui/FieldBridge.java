@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,9 @@ public class FieldBridge {
 					&& StringUtils.isBlank(field.getAlternateDisplayPropertyName())) {
 				Class<? extends KeyValuesFinder> keyValuesFinderName = ClassLoaderUtils.getClass(fieldControl.getValuesFinderClass(), KeyValuesFinder.class);
                 KeyValuesFinder finder = keyValuesFinderName.newInstance();
-
+                if(formatter != null){
+                    prop = ObjectUtils.getFormattedPropertyValue(bo,propertyName,formatter);
+                }
                 propValue = lookupFinderValue(fieldControl, prop, finder);
             } else {
 				propValue = ObjectUtils.getFormattedPropertyValue(bo, field.getPropertyName(), formatter);

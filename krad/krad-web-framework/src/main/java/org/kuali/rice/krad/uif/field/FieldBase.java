@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -237,12 +237,9 @@ public class FieldBase extends ComponentBase implements Field {
     }
 
     /**
-     * Field Security object that indicates what authorization (permissions) exist for the field
-     *
-     * @return FieldSecurity instance
+     * @see org.kuali.rice.krad.uif.field.Field#getFieldSecurity()
      */
-    @Override
-    public FieldSecurity getComponentSecurity() {
+    public FieldSecurity getFieldSecurity() {
         return (FieldSecurity) super.getComponentSecurity();
     }
 
@@ -260,6 +257,9 @@ public class FieldBase extends ComponentBase implements Field {
         super.setComponentSecurity(componentSecurity);
     }
 
+    /**
+     * @see org.kuali.rice.krad.uif.component.ComponentBase#getComponentSecurityClass()
+     */
     @Override
     protected Class<? extends ComponentSecurity> getComponentSecurityClass() {
         return FieldSecurity.class;

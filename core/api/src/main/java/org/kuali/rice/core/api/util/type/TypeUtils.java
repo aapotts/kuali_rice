@@ -1,5 +1,5 @@
 /**
- * Copyright 2005-2012 The Kuali Foundation
+ * Copyright 2005-2013 The Kuali Foundation
  *
  * Licensed under the Educational Community License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 public class TypeUtils {
     private static final Collection<Class<?>> BOOLEAN_CLASSES = add(Boolean.class, Boolean.TYPE);
     private static final Collection<Class<?>> INTEGRAL_CLASSES = add(Byte.class, Byte.TYPE, Short.class, Short.TYPE, Integer.class, Integer.TYPE, Long.class, Long.TYPE, BigInteger.class, KualiInteger.class);
-    private static final Collection<Class<?>> DECIMAL_CLASSES = add(Float.class, Float.TYPE, Double.class, Double.TYPE, BigDecimal.class, AbstractKualiDecimal.class);
+    private static final Collection<Class<?>> DECIMAL_CLASSES = add(Float.class, Float.TYPE, Double.class, Double.TYPE, BigDecimal.class, AbstractKualiDecimal.class, KualiDecimal.class);
     private static final Collection<Class<?>> TEMPORAL_CLASSES = add(java.util.Date.class, java.sql.Date.class, java.sql.Timestamp.class, LocalDate.class, DateTime.class);
     private static final Collection<Class<?>> STRING_CLASSES = Collections.<Class<?>>singleton(CharSequence.class);
     private static final Collection<Class<?>> CLASS_CLASSES = Collections.<Class<?>>singleton(Class.class);
