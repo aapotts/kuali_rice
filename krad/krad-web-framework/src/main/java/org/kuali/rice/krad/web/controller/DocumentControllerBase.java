@@ -17,9 +17,11 @@ package org.kuali.rice.krad.web.controller;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.kuali.rice.core.api.CoreApiServiceLocator;
 import org.kuali.rice.core.api.config.property.ConfigurationService;
 import org.kuali.rice.core.api.exception.RiceRuntimeException;
 import org.kuali.rice.core.api.mail.MailMessage;
+import org.kuali.rice.core.api.mail.Mailer;
 import org.kuali.rice.core.api.util.RiceKeyConstants;
 import org.kuali.rice.coreservice.framework.CoreFrameworkServiceLocator;
 import org.kuali.rice.coreservice.framework.parameter.ParameterConstants;
@@ -34,31 +36,23 @@ import org.kuali.rice.krad.bo.DocumentHeader;
 import org.kuali.rice.krad.bo.Note;
 import org.kuali.rice.krad.document.Document;
 import org.kuali.rice.krad.document.DocumentAuthorizer;
-import org.kuali.rice.krad.maintenance.MaintenanceDocument;
 import org.kuali.rice.krad.exception.DocumentAuthorizationException;
 import org.kuali.rice.krad.exception.UnknownDocumentIdException;
 import org.kuali.rice.krad.exception.ValidationException;
+import org.kuali.rice.krad.maintenance.MaintenanceDocument;
 import org.kuali.rice.krad.rules.rule.event.AddNoteEvent;
-import org.kuali.rice.krad.service.AttachmentService;
-import org.kuali.rice.krad.service.BusinessObjectService;
-import org.kuali.rice.krad.service.DataDictionaryService;
-import org.kuali.rice.krad.service.DocumentDictionaryService;
-import org.kuali.rice.krad.service.DocumentService;
-import org.kuali.rice.krad.service.KRADServiceLocator;
-import org.kuali.rice.krad.service.KRADServiceLocatorWeb;
-import org.kuali.rice.krad.service.MailService;
-import org.kuali.rice.krad.service.NoteService;
+import org.kuali.rice.krad.service.*;
 import org.kuali.rice.krad.uif.UifConstants.WorkflowAction;
 import org.kuali.rice.krad.uif.UifParameters;
 import org.kuali.rice.krad.uif.UifPropertyPaths;
 import org.kuali.rice.krad.uif.container.CollectionGroup;
 import org.kuali.rice.krad.uif.util.ObjectPropertyUtils;
 import org.kuali.rice.krad.util.GlobalVariables;
-import org.kuali.rice.krad.util.IPMatcher;
 import org.kuali.rice.krad.util.KRADConstants;
 import org.kuali.rice.krad.util.NoteType;
 import org.kuali.rice.krad.web.form.DocumentFormBase;
 import org.kuali.rice.krad.web.form.UifFormBase;
+import org.springframework.security.web.util.IpAddressMatcher;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.ServletRequestBindingException;
@@ -387,8 +381,8 @@ public abstract class DocumentControllerBase extends UifControllerBase {
                     "REMOTE_ADDRESS_BAD_IPS");
             boolean addIpWarning = false;
             for (String ipRange : ipRanges) {
-                IPMatcher ipMatcher = new IPMatcher(ipRange);
-                if (ipMatcher.match(ipAddress)) {
+                IpAddressMatcher ipMatcher = new IpAddressMatcher(ipRange);
+                if (ipMatcher.matches(ipAddress)) {
                     addIpWarning = true;
                     break;
                 }
@@ -401,7 +395,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
                 Collection<String> warningEmailRecipients = CoreFrameworkServiceLocator.getParameterService().getParameterValuesAsString(
                         KRADConstants.KUALI_RICE_SYSTEM_NAMESPACE, ParameterConstants.ALL_COMPONENT,
                         "REMOTE_ADDRESS_BAD_IP_EMAIL");
-                MailService mailService = KRADServiceLocator.getMailService();
+                Mailer mailer = CoreApiServiceLocator.getMailer();
                 Person kualiUser = GlobalVariables.getUserSession().getPerson();
                 String principalId;
                 if (kualiUser == null) {
@@ -416,7 +410,7 @@ public abstract class DocumentControllerBase extends UifControllerBase {
                 message.setSubject("Kuali IP Address Warning");
                 message.setMessage("User:" + principalId + " Performing workflow action " + action.name() + "for document: " + document.getDocumentNumber() + " from IP address: " + ipAddress + " WARNING: Potentially dangerous IP address detected");
                 try {
-                    mailService.sendMessage(message);
+                    mailer.sendEmail(message);
                 } catch (Exception e) {
                     // TODO: handle exception
                 }
